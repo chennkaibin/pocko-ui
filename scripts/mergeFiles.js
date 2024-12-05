@@ -7,8 +7,6 @@ const sourcePattern = "./packages/!(node_modules)/lib";
 // 目标文件夹路径
 const targetFolder = "./lib";
 
-console.log(sourcePattern);
-
 // 使用 glob 同步匹配文件夹并进行复制和重命名
 const folders = globSync(sourcePattern);
 
