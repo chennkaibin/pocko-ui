@@ -1,0 +1,22 @@
+.table-wrapper {
+  --syntable-row-active-bg: #f0f8ff; /* 定义变量 */
+}
+
+.table-wrapper .table-tr-active {
+  background-color: var(--syntable-row-active-bg); /* 使用变量 */
+}
+
+.table-wrapper .table-cell-active {
+  background-color: var(--syntable-row-active-bg); /* 使用变量 */
+}
+
+.table-wrapper .table-auto-width {
+  width: auto;
+  table-layout: auto;
+}
+
+// .table_className {
+//   table-layout: auto;
+//   width: max-content;
+//   min-width: 100%;
+// }

@@ -1,0 +1,46 @@
+.tooltip-container {
+  cursor: pointer;
+}
+
+.tooltip-container-content {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.my-tooltip {
+  position: absolute;
+  z-index: 9999;
+  max-width: 220px;
+  padding: 8px;
+  border-radius: 4px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  /* 动态颜色 */
+  background-color: var(--tooltip-color, #000);
+}
+
+/* 箭头上方 */
+.my-tooltip.bottom::before {
+  content: "";
+  position: absolute;
+  bottom: 100%; /* 箭头位于 tooltip 上方 */
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent var(--tooltip-color, #000) transparent;
+}
+
+/* 箭头下方 */
+.my-tooltip.top::before {
+  content: "";
+  position: absolute;
+  top: 100%; /* 箭头位于 tooltip 下方 */
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: var(--tooltip-color, #000) transparent transparent transparent;
+}

@@ -1,0 +1,22 @@
+.popovers-overflow {
+  overflow: auto;
+
+  &::-webkit-scrollbar {
+    width: 10px;
+    height: 6px;
+    background-color: #e6e6e6;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #dadada;
+    border-radius: 5px;
+
+    &:hover {
+      background-color: #929292;
+    }
+  }
+
+  &::-webkit-scrollbar-corner {
+    background-color: #e6e6e6;
+  }
+}
