@@ -319,7 +319,7 @@ export default function SelectInput({
           }`}
         >
           <svg width="10px" height="10px" viewBox="0 -4.5 20 20">
-            <g stroke="none" stroke-width="1" fill="none">
+            <g stroke="none" strokeWidth="1" fill="none">
               <g
                 transform="translate(-180.000000, -6684.000000)"
                 className="arrow-fill-g"
