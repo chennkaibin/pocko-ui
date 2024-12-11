@@ -1,72 +1,116 @@
-import React from "react";
+import React, {
+  useImperativeHandle,
+  useState,
+  useEffect,
+  useRef,
+  forwardRef,
+} from "react";
+import { clsWrite, clsCombine } from "../../../utils/cls";
 import "./Index.scss";
 
 interface CheckboxProps {
-  checkboxList: Array<{ id: string | number; name: string; value: string }>; // checkbox列表
-  groupName: string; // checkbox的名字
-  selectedValues: string[]; // 选择的值
-  onChange: (value: string[]) => void; // 选择的回调函数
-  type?: "inline" | "block"; // 行还是列
-  disableLastIfSelected?: boolean; // 是否禁用最后一个未选中的选项
+  contentRef?: React.ForwardedRef<any>;
+  wrapperClassName?: string;
+  controlClassName?: string;
+  itemSelectedClassName?: string;
+  value: string | boolean;
+  label?: React.ReactNode | string;
+  /** input  */
+  id?: string | number | any;
+  name?: string;
+  checked?: boolean;
+  disabled?: any;
+  style?: React.CSSProperties;
+  /** Function */
+  onChange?: (arg_1: any, arg_2: any) => void;
 }
 
 export default function Checkbox({
-  checkboxList,
-  groupName,
-  selectedValues,
+  contentRef,
+  wrapperClassName,
+  controlClassName,
+  itemSelectedClassName,
+  value,
+  label,
+  name,
+  checked,
+  disabled,
+  id,
+  style,
   onChange,
-  type = "block",
-  disableLastIfSelected = false, // 默认值为 false
+  ...attributes
 }: CheckboxProps) {
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    let updatedValues = [...selectedValues];
+  const rootRef = useRef<any>(null);
 
-    if (e.target.checked) {
-      updatedValues.push(value);
-    } else {
-      updatedValues = updatedValues.filter((v) => v !== value);
+  const idRes = id;
+  const nameRes = name;
+
+  const [val, setVal] = useState<any>(null); //
+
+  // onChange函数
+  function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const _check = event.target.checked;
+    setVal(_check);
+
+    if (typeof onChange === "function") {
+      onChange(event, value);
     }
+  }
 
-    onChange(updatedValues);
-  };
+  useEffect(() => {
+    setVal(checked);
+  }, [checked]);
 
-  // 计算未选中的复选框数量
-  const uncheckedCount = checkboxList.length - selectedValues.length;
+  useImperativeHandle(
+    contentRef,
+    () => ({
+      clear: (cb?: any) => {
+        setVal(false);
+        cb?.();
+      },
+      set: (value: string, cb?: any) => {
+        setVal(value);
+        cb?.();
+      },
+    }),
+    [contentRef]
+  );
 
   return (
-    <div style={{ display: "flex", alignItems: "center" }}>
-      <div className={type === "inline" ? "w-100 text-nowrap" : "w-100"}>
-        {checkboxList.map((item, index) => (
-          <div
-            className={
-              type === "inline"
-                ? "form-check form-check-inline mb-0"
-                : "form-check mb-0"
-            }
-            key={String(item.id)}
-          >
-            <input
-              className="form-check-input"
-              type="checkbox"
-              id={String(item.id)}
-              name={groupName}
-              value={item.value}
-              checked={selectedValues.includes(item.value)}
-              onChange={handleCheckboxChange}
-              disabled={
-                disableLastIfSelected &&
-                uncheckedCount === 1 &&
-                !selectedValues.includes(item.value)
-              } // 仅剩一个未选中时禁用
-            />
+    <>
+      <div
+        className={clsCombine(
+          "form-check__wrapper",
+          clsWrite(wrapperClassName, "mb-3"),
+          val ? clsWrite(itemSelectedClassName, "item-selected") : ""
+        )}
+        ref={rootRef}
+      >
+        <div className="form-check">
+          <input
+            className={clsWrite(controlClassName, "form-check-input")}
+            type="checkbox"
+            value={(value as string) || ""}
+            checked={val || false}
+            id={`pocko-form-check-label-${idRes}`}
+            data-checked={val}
+            data-name={`pocko-form-check-label-${nameRes}`}
+            style={{ cursor: "pointer", ...style }}
+            disabled={disabled || null}
+            onChange={handleChange}
+            {...attributes}
+          />
 
-            <label className="form-check-label" htmlFor={String(item.id)}>
-              {item.name}
+          {label && (
+            <label
+              htmlFor={`pocko-form-check-label-${idRes}`}
+              className="form-check-label"
+            >
+              {label}
             </label>
-          </div>
-        ))}
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

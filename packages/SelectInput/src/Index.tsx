@@ -264,7 +264,7 @@ export default function SelectInput({
 
       <div
         className="select-input__content"
-        style={{ width: size === "auto" ? "auto" : `${size}px` }}
+        style={{ width: typeof size === "number" ? `${size}px` : "auto" }}
         ref={dropdown}
       >
         <input
@@ -341,7 +341,7 @@ export default function SelectInput({
                 isShow ? "select-input__popup__menu--isShow" : ""
               } ${clsCombine(popupMenuClassName)}`}
               style={{
-                zIndex: `${zIndex}`,
+                zIndex: zIndex,
                 width: `${dropdown.current?.getBoundingClientRect().width}px`,
               }}
             >
