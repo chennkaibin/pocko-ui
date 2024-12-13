@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import "./Index.scss";
 
 interface Props {
@@ -23,13 +23,22 @@ const getMenuNodes = (
       {menuList.map((item: any, index: any) => {
         const isChosen = chooseId == item[id]; // 判断是否被点击
         const hasChildren = !!item.children && item.children.length > 0; // 判断是否有子节点
-        const isExpanded = item.isExpanded;
 
         return (
-          <li className="tree__diagram__item" key={item[id] || index}>
+          <li
+            className="tree__diagram__item"
+            key={item[id] || index}
+            data-id={item[id]}
+            data-item={JSON.stringify(item)}
+          >
             <div className="tree__item">
               {hasChildren || !item.active ? (
-                <span className="arrow" onClick={() => toggleNode(item)}>
+                <span
+                  className="arrow"
+                  onClick={() => {
+                    toggleNode(item);
+                  }}
+                >
                   {item.loading ? (
                     <span className="loading-icon">
                       <svg width="1em" height="1em" viewBox="0 0 512 512">
