@@ -1,0 +1,117 @@
+.trees__wrapper {
+  position: relative;
+  padding: 0.5rem 0;
+  overflow-x: auto;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    height: 7px;
+    width: 7px;
+    border-radius: 10px;
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    height: 20px;
+    border-radius: 10px;
+    border-width: 1.5px;
+    border-style: solid;
+    border-color: transparent;
+    background-color: #d6d6d6;
+    background-clip: padding-box;
+    &:hover {
+      background-color: #949494;
+      background-clip: border-box;
+    }
+  }
+
+  .tree__diagram {
+    display: flex;
+    flex-direction: column;
+    padding-left: 0;
+    margin-bottom: 0;
+    list-style: none;
+
+    --trees-padding-left: 1rem;
+    --trees-padding-y: 0.25rem;
+
+    .arrow {
+      cursor: pointer;
+      z-index: 5;
+      width: 10px;
+      height: 10px;
+      display: inline-flex;
+      align-items: center;
+      position: absolute;
+      top: 10px;
+
+      .default-icon {
+        transition: transform 0.2s ease;
+        &.rotated {
+          transform: rotate(90deg); // 展开时旋转
+        }
+      }
+
+      .loading-icon {
+        animation: rotate 1s linear infinite;
+      }
+
+      @keyframes rotate {
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    }
+
+    .tree__diagram__item {
+      position: relative;
+      padding-left: var(--trees-padding-left);
+    }
+
+    .link-text {
+      position: relative;
+      display: block;
+      text-decoration: none;
+      z-index: 1;
+      padding: var(--trees-padding-y) 1rem;
+
+      &:hover {
+        cursor: pointer;
+
+        .hoverable {
+          background: #efefef;
+        }
+
+        .custom-content {
+          opacity: 1;
+          visibility: visible;
+          transition: opacity 0.3s ease-in, visibility 0.3s ease-in;
+          transition-delay: 0.2s; // 延迟显示
+        }
+      }
+
+      .hoverable {
+        border-radius: 5px;
+        padding: var(--trees-padding-y);
+      }
+
+      .custom-content {
+        opacity: 0;
+        visibility: hidden;
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10;
+
+        .btn {
+          white-space: nowrap;
+        }
+      }
+    }
+
+    .link-text .hoverable.is-active {
+      color: white;
+      background-color: #3162b2;
+    }
+  }
+}
