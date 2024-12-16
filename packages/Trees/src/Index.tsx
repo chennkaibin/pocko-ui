@@ -1,10 +1,16 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useImperativeHandle } from "react";
 import "./Index.scss";
 
+import { clsWrite, clsCombine } from "../../../utils/cls";
+
 interface Props {
+  treesRef?: any;
+  wrapperClassName?: any;
   id: string;
   name: string;
   data: any[];
+  treeDataItemClick?: Function; // 树节点的点击回调
+  createCustomContent?: (node: any) => JSX.Element; // 新增自定义内容生成函数
   dataService?: any; // 可选：数据服务
   dataServiceFunction?: string; // 可选：服务函数名称
   dataServiceFunctionParams?: any[]; // 可选：服务函数参数
@@ -102,7 +108,7 @@ const getMenuNodes = (
                 <span
                   className={`hoverable ${isChosen ? "is-active" : ""}`}
                   onClick={() => {
-                    handleItemClick(item[id]);
+                    handleItemClick(item);
                   }}
                 >
                   {item.icon && <var>{item.icon}</var>}
@@ -135,9 +141,13 @@ const getMenuNodes = (
 };
 
 export default function Index({
+  treesRef,
   id,
   name,
+  wrapperClassName,
   data,
+  treeDataItemClick,
+  createCustomContent,
   dataService,
   dataServiceFunction,
   dataServiceFunctionParams,
@@ -146,8 +156,12 @@ export default function Index({
 
   const [chooseId, setChooseId] = useState<any>(null);
 
-  const handleItemClick = (id: any) => {
-    setChooseId(id);
+  const handleItemClick = (item: any) => {
+    setChooseId(item[id]);
+
+    if (treeDataItemClick) {
+      treeDataItemClick(item);
+    }
   };
 
   // 递归更新某个节点的 active 和 children
@@ -192,11 +206,12 @@ export default function Index({
               active: false,
               loading: false,
               children: [],
+              customContent: createCustomContent && createCustomContent(item),
             }));
 
             setTreeData((prevData: any) =>
               updateTreeNode(prevData, node[id], (n) => {
-                n.children = newChildren; // 填充子节点
+                n.children = [...newChildren]; // 填充子节点
                 n.active = true; // 展开当前节点
                 n.loading = false;
               })
@@ -204,6 +219,7 @@ export default function Index({
           } else {
             setTreeData((prevData: any) =>
               updateTreeNode(prevData, node[id], (n) => {
+                n.children = [];
                 n.active = true;
                 n.loading = false;
               })
@@ -230,6 +246,47 @@ export default function Index({
     }
   };
 
+  // 获取子节点，递归更新
+  const updatedTreeNode = (node: any) => {
+    if (dataService && dataServiceFunction) {
+      const params = [...(dataServiceFunctionParams || [])];
+
+      // 检查是否有 $QUERY_STRING，如果有，替换 keyword
+      const queryIndex = params.indexOf("$QUERY_STRING");
+      if (queryIndex !== -1) {
+        params[queryIndex] = node;
+      }
+
+      dataService[dataServiceFunction](...params).then((result: any) => {
+        if (result.length > 0) {
+          const newChildren = result.map((item: any) => ({
+            ...item,
+            active: false,
+            loading: false,
+            children: [],
+            customContent: createCustomContent && createCustomContent(item),
+          }));
+
+          setTreeData((prevData: any) =>
+            updateTreeNode(prevData, node[id], (n) => {
+              n.children = [...newChildren]; // 填充子节点
+              n.active = true; // 展开当前节点
+              n.loading = false;
+            })
+          );
+        } else {
+          setTreeData((prevData: any) =>
+            updateTreeNode(prevData, node[id], (n) => {
+              n.children = [];
+              n.active = true;
+              n.loading = false;
+            })
+          );
+        }
+      });
+    }
+  };
+
   useEffect(() => {
     if (data.length > 0) {
       setTreeData(data);
@@ -238,10 +295,14 @@ export default function Index({
     }
   }, [data]);
 
+  useImperativeHandle(treesRef, () => ({
+    updatedTreeNode,
+  }));
+
   return (
     <>
       {treeData.length > 0 && (
-        <nav className="trees__wrapper">
+        <nav className={clsCombine("trees__wrapper", wrapperClassName)}>
           {getMenuNodes(
             id,
             name,
