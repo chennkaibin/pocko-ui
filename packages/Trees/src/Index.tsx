@@ -9,6 +9,7 @@ interface Props {
   id: string;
   name: string;
   data: any[];
+  defaultId?: any;
   treeDataItemClick?: Function; // 树节点的点击回调
   createCustomContent?: (node: any) => JSX.Element; // 新增自定义内容生成函数
   dataService?: any; // 可选：数据服务
@@ -146,6 +147,7 @@ export default function Index({
   name,
   wrapperClassName,
   data,
+  defaultId,
   treeDataItemClick,
   createCustomContent,
   dataService,
@@ -246,9 +248,13 @@ export default function Index({
     }
   };
 
-  // 获取子节点，递归更新
-  const updatedTreeNode = (node: any) => {
-    if (dataService && dataServiceFunction) {
+  // 外部调用，更新数据
+  const updatedTreeNode = (
+    node: any,
+    updatedId: any,
+    dataServiceUpdatedFunction: any
+  ) => {
+    if (dataService && dataServiceUpdatedFunction) {
       const params = [...(dataServiceFunctionParams || [])];
 
       // 检查是否有 $QUERY_STRING，如果有，替换 keyword
@@ -257,7 +263,7 @@ export default function Index({
         params[queryIndex] = node;
       }
 
-      dataService[dataServiceFunction](...params).then((result: any) => {
+      dataService[dataServiceUpdatedFunction](...params).then((result: any) => {
         if (result.length > 0) {
           const newChildren = result.map((item: any) => ({
             ...item,
@@ -268,7 +274,7 @@ export default function Index({
           }));
 
           setTreeData((prevData: any) =>
-            updateTreeNode(prevData, node[id], (n) => {
+            updateTreeNode(prevData, node[updatedId], (n) => {
               n.children = [...newChildren]; // 填充子节点
               n.active = true; // 展开当前节点
               n.loading = false;
@@ -276,7 +282,7 @@ export default function Index({
           );
         } else {
           setTreeData((prevData: any) =>
-            updateTreeNode(prevData, node[id], (n) => {
+            updateTreeNode(prevData, node[updatedId], (n) => {
               n.children = [];
               n.active = true;
               n.loading = false;
@@ -294,6 +300,14 @@ export default function Index({
       setTreeData([]);
     }
   }, [data]);
+
+  useEffect(() => {
+    if (defaultId) {
+      setChooseId(defaultId);
+    } else {
+      setChooseId(null);
+    }
+  }, [defaultId]);
 
   useImperativeHandle(treesRef, () => ({
     updatedTreeNode,
