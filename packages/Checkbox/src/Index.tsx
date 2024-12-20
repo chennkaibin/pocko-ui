@@ -11,6 +11,7 @@ import "./Index.scss";
 interface CheckboxProps {
   contentRef?: React.ForwardedRef<any>;
   wrapperClassName?: string;
+  formCheckClassName?: string;
   controlClassName?: string;
   itemSelectedClassName?: string;
   value: string | boolean;
@@ -28,6 +29,7 @@ interface CheckboxProps {
 export default function Checkbox({
   contentRef,
   wrapperClassName,
+  formCheckClassName,
   controlClassName,
   itemSelectedClassName,
   value,
@@ -86,7 +88,7 @@ export default function Checkbox({
         )}
         ref={rootRef}
       >
-        <div className="form-check">
+        <div className={clsWrite(formCheckClassName, "form-check")}>
           <input
             className={clsWrite(controlClassName, "form-check-input")}
             type="checkbox"
