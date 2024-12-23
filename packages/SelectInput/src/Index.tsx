@@ -360,7 +360,7 @@ export default function SelectInput({
                             : "border-bottom"
                         } ${focusedOption === index ? "text-bg-primary" : ""}`}
                         key={item[id] || ""}
-                        onClick={(e) => {
+                        onMouseDown={(e) => {
                           e.stopPropagation();
                           chooseOption(item);
                         }}
@@ -383,7 +383,7 @@ export default function SelectInput({
                             : "border-bottom"
                         } ${focusedOption === index ? "text-bg-primary" : ""}`}
                         key={item[id] || ""}
-                        onClick={(e) => {
+                        onMouseDown={(e) => {
                           e.stopPropagation();
                           toggleSelection(item);
                         }}
@@ -395,7 +395,7 @@ export default function SelectInput({
                         <input
                           type="checkbox"
                           className="form-check-input me-2"
-                          onClick={(e) => e.stopPropagation()}
+                          onMouseDown={(e) => e.stopPropagation()}
                           checked={value.some((i: any) => i[id] === item[id])}
                           onChange={() => toggleSelection(item)}
                         />
@@ -421,7 +421,7 @@ export default function SelectInput({
             top: "50%",
             width: `${dropdown.current?.getBoundingClientRect().width}px`,
           }}
-          onClick={() => {
+          onMouseDown={() => {
             const input: any = document.getElementById(`${inputId}`);
             input.focus();
           }}
