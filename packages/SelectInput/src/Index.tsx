@@ -276,9 +276,8 @@ export default function SelectInput({
             "select-input__content__input"
           )}
           onFocus={() => {
-            const targetElement = document.body;
-
             if (isDisableBodyScroll) {
+              const targetElement = document.body;
               disableBodyScroll(targetElement);
             }
 
@@ -421,7 +420,9 @@ export default function SelectInput({
             top: "50%",
             width: `${dropdown.current?.getBoundingClientRect().width}px`,
           }}
-          onMouseDown={() => {
+          onMouseDown={(e: any) => {
+            e.preventDefault();
+
             const input: any = document.getElementById(`${inputId}`);
             input.focus();
           }}

@@ -47,7 +47,7 @@ export const useKeyboardNavigation = (
     if (focusedOption !== null && visibleItems[focusedOption]) {
       visibleItems[focusedOption].scrollIntoView({
         behavior: "smooth",
-        block: "center",
+        block: "nearest",
         inline: "nearest",
       });
     }
