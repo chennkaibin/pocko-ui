@@ -5,6 +5,7 @@ import "./Index.scss";
 
 interface Props {
   maskWidth: string;
+  maxWidth?: string;
   title: string;
   confirmClickFn: Function;
   children: ReactNode;
@@ -21,6 +22,7 @@ interface Props {
 const Mask = forwardRef(function Mask(
   {
     maskWidth,
+    maxWidth,
     title,
     confirmClickFn,
     children,
@@ -99,6 +101,7 @@ const Mask = forwardRef(function Mask(
             ? "modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg"
             : "modal-dialog modal-dialog-centered modal-dialog-scrollable"
         }
+        style={{ maxWidth: maxWidth }}
       >
         <div className="modal-content" ref={dragContentHandle}>
           <div
