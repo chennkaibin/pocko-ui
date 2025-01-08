@@ -1,78 +1,115 @@
-import React from "react";
+import React, {
+  useImperativeHandle,
+  useState,
+  useEffect,
+  useRef,
+  forwardRef,
+} from "react";
+import { clsWrite, clsCombine } from "../../../utils/cls";
 import "./Index.scss";
 
-import { clsWrite, clsCombine } from "../../../utils/cls";
+export interface OptionConfig {
+  [propName: string]: string | number | React.ReactNode | boolean;
+}
 
 interface RadioProps {
-  wrapperClassName?: string; // 最外层的样式名字
-  label?: string | React.ReactNode; // 添加了 label 支持
-  wrapperContentCalssName?: string; // radio外层样式
-  radioList: any[]; // 传入的 radio数据
-  controlClassName?: string; // input样式
-  groupName: string; // radio的组名字
-  defaultValue?: string; // 选中的值
-  value?: string; // input的value
-  name?: string; // lable应该展示的值
-  radioChange: (value: any) => void; // 选择的回调函数
-  type?: "inline" | "block"; // 行还是列
+  contentRef?: React.ForwardedRef<any>;
+  wrapperClassName?: string;
+  formCheckClassName?: string;
+  formCheckLableClassName?: string;
+  options?: OptionConfig[] | string | unknown;
+  value?: string;
+  id?: string | number | any;
+  name?: string;
+  /** Function */
+  onChange?: (arg_1: any, arg_2: any, arg_3?: any, arg_4?: any) => void;
 }
 
 export default function Radio({
+  contentRef,
   wrapperClassName,
-  label, // 标题
-  wrapperContentCalssName,
-  radioList,
-  controlClassName,
-  groupName, // radio的组名字
-  defaultValue, // 选中的值
-  value = "value",
+  formCheckClassName,
+  formCheckLableClassName,
+  options,
+  value,
+  onChange,
+  id,
   name,
-  radioChange, // 选择的回调
-  type = "block", // 行还是列
+  ...attributes
 }: RadioProps) {
-  return (
-    <div
-      className={clsCombine(
-        "radio-group__wrapper",
-        clsWrite(wrapperClassName, "mb-2 position-relative")
-      )}
-    >
-      {label ? (
-        <>{typeof label === "string" ? <label>{label}</label> : label}</>
-      ) : null}
+  const rootRef = useRef<any>(null);
 
+  const [val, setVal] = useState<any>(null);
+
+  function handleChange(arg_1: any, arg_2: any, arg_3: any, arg_4: any) {
+    setVal(arg_1);
+  }
+
+  useEffect(() => {
+    setVal(value);
+  }, [value]);
+
+  useImperativeHandle(
+    contentRef,
+    () => ({
+      clear: (cb?: any) => {
+        setVal("");
+        cb?.();
+      },
+      set: (value: string, cb?: any) => {
+        setVal(value);
+        cb?.();
+      },
+    }),
+    [contentRef]
+  );
+
+  return (
+    <>
       <div
-        className={clsWrite(wrapperContentCalssName, "radio-group__content")}
+        className={clsCombine(
+          "form-check__wrapper",
+          clsWrite(wrapperClassName, "mb-3")
+        )}
+        ref={rootRef}
       >
-        {radioList.map((item: any, index: any) => (
-          <div
-            className={
-              type === "inline"
-                ? "form-check form-check-inline mb-0"
-                : "form-check mb-0"
-            }
-            key={index}
-          >
-            <input
-              className={clsWrite(controlClassName, "form-check-input")}
-              type="radio"
-              id={`radio-group-${groupName}-${index}`}
-              name={groupName}
-              value={item[value]}
-              checked={defaultValue == item[value]}
-              onChange={() => {
-                radioChange(item);
-              }}
-            />
-            <label
-              className="form-check-label"
-              htmlFor={`radio-group-${groupName}-${index}`}
-            >
-              {name ? item[name] : item.name}
-            </label>
-          </div>
-        ))}
+        {Array.isArray(options)
+          ? options.map((option, index) => (
+              <div
+                key={index}
+                className={clsWrite(formCheckClassName, "form-check")}
+                {...attributes}
+              >
+                <input
+                  id={`pocko-radio-${id}-${name}-${index}`}
+                  name={name}
+                  type="radio"
+                  className="form-check-input"
+                  value={option.value}
+                  checked={option.value === val}
+                  onChange={(e) =>
+                    handleChange(e.target.value, e.target, option.label, index)
+                  }
+                  disabled={option.disabled}
+                />
+
+                <label
+                  className={clsWrite(
+                    formCheckLableClassName,
+                    "form-check-label"
+                  )}
+                  htmlFor={`pocko-radio-${id}-${name}-${index}`}
+                >
+                  {typeof option.label === "string" ? (
+                    <span dangerouslySetInnerHTML={{ __html: option.label }} />
+                  ) : (
+                    option.label
+                  )}
+                </label>
+              </div>
+            ))
+          : ""}
       </div>
-    </div>
+    </>
   );
 }
