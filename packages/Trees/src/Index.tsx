@@ -249,48 +249,52 @@ export default function Index({
   };
 
   // 外部调用，更新数据
-  const updatedTreeNode = (
-    node: any,
-    updatedId: any,
-    dataServiceUpdatedFunction: any
-  ) => {
-    if (dataService && dataServiceUpdatedFunction) {
-      const params = [...(dataServiceFunctionParams || [])];
+  const updatedTreeNode = (node: any, updatedId: any, newValue: any) => {
+    setTreeData((prevData: any) => {
+      // 如果 newValue 是空字符串，删除节点
+      if (newValue === "") {
+        const removeNode = (nodes: any[], nodeId: any): any[] => {
+          return nodes
+            .filter((n) => n[updatedId] !== nodeId) // 过滤掉目标节点
+            .map((n) => ({
+              ...n,
+              children: n.children ? removeNode(n.children, nodeId) : [], // 递归处理子节点
+            }));
+        };
 
-      // 检查是否有 $QUERY_STRING，如果有，替换 keyword
-      const queryIndex = params.indexOf("$QUERY_STRING");
-      if (queryIndex !== -1) {
-        params[queryIndex] = node;
+        return removeNode(prevData, node[updatedId]);
       }
 
-      dataService[dataServiceUpdatedFunction](...params).then((result: any) => {
-        if (result.length > 0) {
-          const newChildren = result.map((item: any) => ({
-            ...item,
-            active: false,
-            loading: false,
-            children: [],
-            customContent: createCustomContent && createCustomContent(item),
-          }));
+      // 若 newValue 不是空字符串，更新节点
+      return updateTreeNode(prevData, node[updatedId], (n) => {
+        // 遍历新值的字段，与当前节点比较，更新有差异的字段
+        Object.keys(newValue).forEach((key) => {
+          if (key === "children" && Array.isArray(newValue[key])) {
+            // 合并 children
+            const existingChildren = n.children || [];
+            const newChildren = newValue[key];
 
-          setTreeData((prevData: any) =>
-            updateTreeNode(prevData, node[updatedId], (n) => {
-              n.children = [...newChildren]; // 填充子节点
-              n.active = true; // 展开当前节点
-              n.loading = false;
-            })
-          );
-        } else {
-          setTreeData((prevData: any) =>
-            updateTreeNode(prevData, node[updatedId], (n) => {
-              n.children = [];
-              n.active = true;
-              n.loading = false;
-            })
-          );
-        }
+            // 合并逻辑：以新值为主，保留未被新值覆盖的原有子节点
+            const mergedChildren = [
+              ...existingChildren.filter(
+                (child: any) =>
+                  !newChildren.some(
+                    (newChild: any) => newChild[updatedId] === child[updatedId]
+                  )
+              ),
+              ...newChildren,
+            ];
+
+            n.children = mergedChildren; // 更新合并后的 children
+          } else if (n[key] !== newValue[key]) {
+            n[key] = newValue[key]; // 更新有差异的字段
+          }
+        });
+
+        n.active = true; // 展开当前节点
+        n.loading = false; // 停止 loading 状态
       });
-    }
+    });
   };
 
   useEffect(() => {
