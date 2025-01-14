@@ -43,6 +43,10 @@ export default function Radio({
 
   function handleChange(arg_1: any, arg_2: any, arg_3: any, arg_4: any) {
     setVal(arg_1);
+
+    if (onChange) {
+      onChange(arg_1, arg_2, arg_3, arg_4);
+    }
   }
 
   useEffect(() => {
@@ -88,7 +92,7 @@ export default function Radio({
                   value={option.value}
                   checked={option.value === val}
                   onChange={(e) =>
-                    handleChange(e.target.value, e.target, option.label, index)
+                    handleChange(e.target.value, e, option.label, index)
                   }
                   disabled={option.disabled}
                 />
