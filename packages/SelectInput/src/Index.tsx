@@ -316,6 +316,10 @@ export default function SelectInput({
           className={`select-input__content__arrow ${
             isShow ? "select-input__content__arrow--reverse" : ""
           }`}
+          onClick={() => {
+            const input: any = document.getElementById(`${inputId}`);
+            input.focus();
+          }}
         >
           <svg width="10px" height="10px" viewBox="0 -4.5 20 20">
             <g stroke="none" strokeWidth="1" fill="none">
