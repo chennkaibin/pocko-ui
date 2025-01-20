@@ -11,7 +11,7 @@ interface Props {
   data: any[];
   defaultId?: any;
   treeDataItemClick?: Function; // 树节点的点击回调
-  createCustomContent?: (node: any) => JSX.Element; // 新增自定义内容生成函数
+  renderCustomContent?: (node: any) => JSX.Element; // 新增自定义内容生成函数
   dataService?: any; // 可选：数据服务
   dataServiceFunction?: string; // 可选：服务函数名称
   dataServiceFunctionParams?: any[]; // 可选：服务函数参数
@@ -23,7 +23,8 @@ const getMenuNodes = (
   menuList: any[],
   toggleNode: (node: any) => void,
   chooseId: any,
-  handleItemClick: (id: any) => void
+  handleItemClick: (id: any) => void,
+  renderCustomContent?: (item: any) => React.ReactNode
 ) => {
   return (
     <ul className="tree__diagram">
@@ -116,8 +117,10 @@ const getMenuNodes = (
                   {item[name]}
                 </span>
 
-                {item.customContent && (
-                  <div className="custom-content">{item.customContent}</div>
+                {renderCustomContent && (
+                  <div className="custom-content">
+                    {renderCustomContent(item)}
+                  </div>
                 )}
               </div>
             </div>
@@ -130,7 +133,8 @@ const getMenuNodes = (
                   item.children,
                   toggleNode,
                   chooseId,
-                  handleItemClick
+                  handleItemClick,
+                  renderCustomContent
                 )}
               </div>
             )}
@@ -149,7 +153,7 @@ export default function Index({
   data,
   defaultId,
   treeDataItemClick,
-  createCustomContent,
+  renderCustomContent,
   dataService,
   dataServiceFunction,
   dataServiceFunctionParams,
@@ -208,7 +212,6 @@ export default function Index({
               active: false,
               loading: false,
               children: [],
-              customContent: createCustomContent && createCustomContent(item),
             }));
 
             setTreeData((prevData: any) =>
@@ -327,7 +330,8 @@ export default function Index({
             treeData,
             toggleNode,
             chooseId,
-            handleItemClick
+            handleItemClick,
+            renderCustomContent
           )}
         </nav>
       )}
