@@ -19,6 +19,7 @@ interface Props {
   wrapperClassName?: string; // 最外层的样式名字
   wrapperConentInputClassName?: string; // 内部input的样式名字
   popupMenuClassName?: string; // 弹出层的样式名字
+  renderOption?: (item: any) => React.ReactNode; // 自定义选项渲染内容
   id: string | any;
   name: string | any;
   kbcode?: string | any;
@@ -63,6 +64,7 @@ export default function SelectInput({
   dataServiceFunction = "retrieveList", // 默认调用 retrieveList 函数
   dataServiceFunctionParams, // 调用函数的传参
   dataServiceRetrieve = false, // 默认不是检索类的
+  renderOption,
 }: Props) {
   const [keyword, setKeyword] = useState<string>("");
   const [value, setValue] = useState<any>("");
@@ -372,7 +374,11 @@ export default function SelectInput({
                         data-id={item[id]}
                         data-name={item[name]}
                       >
-                        {item[name]}
+                        {renderOption ? (
+                          renderOption(item) // 使用自定义渲染函数
+                        ) : (
+                          <span>{item[name]}</span> // 默认渲染
+                        )}
                       </div>
                     );
                   })
@@ -402,7 +408,11 @@ export default function SelectInput({
                           checked={value.some((i: any) => i[id] === item[id])}
                           onChange={() => toggleSelection(item)}
                         />
-                        {item[name]}
+                        {renderOption ? (
+                          renderOption(item) // 使用自定义渲染函数
+                        ) : (
+                          <span>{item[name]}</span> // 默认渲染
+                        )}
                       </div>
                     );
                   })
