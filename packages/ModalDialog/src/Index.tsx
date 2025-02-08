@@ -16,6 +16,7 @@ interface Props {
   body?: Boolean;
   isDraggable?: Boolean | String;
   zIndex?: String | any;
+  header?: ReactNode;
   footer?: ReactNode;
 }
 
@@ -33,6 +34,7 @@ const Mask = forwardRef(function Mask(
     body = true,
     isDraggable = false,
     zIndex,
+    header,
     footer,
   }: Props,
   ref: any
@@ -104,24 +106,35 @@ const Mask = forwardRef(function Mask(
         style={{ maxWidth: maxWidth }}
       >
         <div className="modal-content" ref={dragContentHandle}>
-          <div
-            className={`modal-header ${
-              isDraggable ? "anes-care-cursor-all-scroll" : ""
-            }`}
-            style={{ cursor: `${isDraggable ? "pointer" : "auto"}` }}
-            ref={dragHandle}
-          >
-            <h1 className="modal-title fs-5" id="exampleModalLiveLabel">
-              {title}
-            </h1>
-            <button
-              type="button"
-              className="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-              onClick={handleDisappearClick}
-            ></button>
-          </div>
+          {header ? (
+            <div
+              className={`${isDraggable ? "anes-care-cursor-all-scroll" : ""}`}
+              style={{ cursor: `${isDraggable ? "pointer" : "auto"}` }}
+              ref={dragHandle}
+            >
+              {header}
+            </div>
+          ) : (
+            <div
+              className={`modal-header ${
+                isDraggable ? "anes-care-cursor-all-scroll" : ""
+              }`}
+              style={{ cursor: `${isDraggable ? "pointer" : "auto"}` }}
+              ref={dragHandle}
+            >
+              <h1 className="modal-title fs-5" id="exampleModalLiveLabel">
+                {title}
+              </h1>
+              <button
+                type="button"
+                className="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+                onClick={handleDisappearClick}
+              ></button>
+            </div>
+          )}
+
           <div
             className={`modal-body`}
             style={{
