@@ -30,6 +30,8 @@ interface Props {
   index?: string | number | any;
   onChange: Function;
   onKeyDown?: Function | any;
+  onFoused?: Function | any;
+  onBlured?: Function | any;
   size?: string | any;
   zIndex?: string | any;
   isHandleInput?: boolean;
@@ -56,6 +58,8 @@ export default function SelectInput({
   index,
   onChange,
   onKeyDown,
+  onFoused,
+  onBlured,
   size = "auto",
   zIndex = 1101,
   isHandleInput = false,
@@ -287,6 +291,11 @@ export default function SelectInput({
               setKeyword("");
             }
 
+            // 外部聚焦方法
+            if (onFoused) {
+              onFoused();
+            }
+
             setIsShow(true);
             const title: any = document.getElementById(`${titleId}`);
             title.classList.add("text-secondary-emphasis", "z-n1");
@@ -296,6 +305,11 @@ export default function SelectInput({
             const input: any = document.getElementById(`${inputId}`);
             title.classList.remove("text-secondary-emphasis", "z-n1");
             input.value = "";
+
+            // 外部失焦方法
+            if (onBlured) {
+              onBlured();
+            }
 
             setTimeout(() => {
               if (isDisableBodyScroll) {
