@@ -24,6 +24,7 @@ interface Props {
   name: string | any;
   kbcode?: string | any;
   dropdownRender: any[];
+  dropdownPosition?: "top" | "bottom" | "auto";
   inputId: string | any;
   titleId: string | any;
   defaultValue?: string | any;
@@ -52,6 +53,7 @@ export default function SelectInput({
   name,
   kbcode = "kb_code",
   dropdownRender,
+  dropdownPosition,
   inputId,
   titleId,
   defaultValue,
@@ -85,7 +87,8 @@ export default function SelectInput({
     isShow,
     setIsShow,
     dataServiceList,
-    loading
+    loading,
+    dropdownPosition
   );
 
   // 键盘逻辑
