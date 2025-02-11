@@ -1,0 +1,67 @@
+.dd-dropdown-wrapper {
+  display: inline-block;
+  position: relative;
+  cursor: pointer;
+}
+
+.dd-dropdown-menu {
+  position: absolute;
+  min-width: 120px;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.2s, transform 0.2s;
+  pointer-events: none;
+
+  &.open {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .dd-menu-item {
+    width: 100%;
+    padding: 8px 12px;
+    text-align: left;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: rgba(0, 0, 0, 0.85);
+    transition: background 0.2s;
+
+    &:hover:not(.disabled) {
+      background: #f5f5f5;
+    }
+
+    &.disabled {
+      color: rgba(0, 0, 0, 0.25);
+      cursor: not-allowed;
+    }
+  }
+
+  .dd-menu-divider {
+    height: 1px;
+    background: #f0f0f0;
+    margin: 4px 0;
+  }
+
+  // 不同位置的微调
+  &.bottomLeft {
+    margin-top: 4px;
+  }
+
+  &.bottomRight {
+    margin-top: 4px;
+  }
+
+  &.topLeft {
+    margin-bottom: 4px;
+  }
+
+  &.topRight {
+    margin-bottom: 4px;
+  }
+}
