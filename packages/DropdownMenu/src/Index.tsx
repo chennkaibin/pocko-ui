@@ -95,9 +95,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
         setPosition(pos);
       }
 
-      setTimeout(() => {
-        setIsOpen(open);
-      }, 50);
+      setIsOpen(open);
     },
     [calculatePosition, disabled]
   );
@@ -110,6 +108,13 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
         triggerRef.current !== event.target &&
         !triggerRef.current.contains(event.target as HTMLElement)
       ) {
+        if (
+          !menuRef.current ||
+          !triggerRef.current ||
+          menuRef.current.contains(event.target as Node) ||
+          triggerRef.current.contains(event.target as Node)
+        )
+          return;
         handleTrigger(false);
       }
     },
@@ -135,14 +140,8 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
   const triggerProps = {
     ...(trigger === "hover"
       ? {
-          onMouseEnter: () =>
-            setTimeout(() => {
-              handleTrigger(true);
-            }, 150),
-          onMouseLeave: () =>
-            setTimeout(() => {
-              handleTrigger(false);
-            }, 150),
+          onMouseEnter: () => handleTrigger(true),
+          onMouseLeave: () => handleTrigger(false),
         }
       : {
           onClick: () => handleTrigger(!isOpen),
@@ -152,7 +151,10 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
   return (
     <>
       <div
-        className={`dd-dropdown-wrapper ${wrapperClassName}`}
+        className={`dd-dropdown-wrapper ${wrapperClassName} ${
+          disabled ? "dd-disabled" : ""
+        }`}
+        aria-disabled={disabled}
         ref={triggerRef}
         {...triggerProps}
       >

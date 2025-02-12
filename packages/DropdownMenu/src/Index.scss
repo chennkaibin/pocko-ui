@@ -65,3 +65,20 @@
     margin-bottom: 4px;
   }
 }
+
+// 新增样式（Index.scss）
+.dd-dropdown-wrapper {
+  &.dd-disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+
+    // 禁用 hover 效果
+    &:hover {
+      background: inherit;
+    }
+  }
+}
+
+.dd-menu-item.disabled {
+  pointer-events: none; // 阻止鼠标事件
+}
