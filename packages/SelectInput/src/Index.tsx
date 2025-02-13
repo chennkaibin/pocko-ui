@@ -13,6 +13,12 @@ import { clsWrite, clsCombine } from "../../../utils/cls";
 
 import "./Index.scss";
 
+export interface CleanTriggerConfig {
+  valid: boolean;
+  cleanValueLabel?: string;
+  cleanFunc?: Function;
+}
+
 interface Props {
   type?: "COMMON" | "MULTI";
   label?: string | React.ReactNode; // 添加了 label 支持
@@ -37,6 +43,7 @@ interface Props {
   zIndex?: string | any;
   isHandleInput?: boolean;
   isDisableBodyScroll?: boolean;
+  cleanTrigger?: CleanTriggerConfig;
   dataService?: any; // 添加服务类作为参数
   dataServiceFunction?: string; // 指定要调用的函数名称
   dataServiceFunctionParams?: any[]; // 指定要调用的函数的传参
@@ -71,6 +78,7 @@ export default function SelectInput({
   dataServiceFunctionParams, // 调用函数的传参
   dataServiceRetrieve = false, // 默认不是检索类的
   renderOption,
+  cleanTrigger,
 }: Props) {
   const [keyword, setKeyword] = useState<string>("");
   const [value, setValue] = useState<any>("");
@@ -176,6 +184,24 @@ export default function SelectInput({
 
     return filteredList;
   };
+
+  // 清空
+  function clearSelection() {
+    setIsShow(false);
+    setValue("");
+    setKeyword("");
+    setFocusedOption(null); // 重置焦点
+
+    if (cleanTrigger?.cleanFunc) {
+      cleanTrigger.cleanFunc();
+    }
+
+    // 失去焦点
+    setTimeout(() => {
+      const input: any = document.getElementById(`${inputId}`);
+      input.blur();
+    }, 0);
+  }
 
   useEffect(() => {
     if (isShow) {
@@ -367,6 +393,21 @@ export default function SelectInput({
                 width: `${dropdown.current?.getBoundingClientRect().width}px`,
               }}
             >
+              {/* 删除按钮项 */}
+              {cleanTrigger?.valid && (
+                <div
+                  className="select-input__popup__list py-1 px-1 border-bottom bg-light"
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                    clearSelection(); // 清空选项
+                  }}
+                >
+                  <span className="btn btn-sm btn-secondary">
+                    {cleanTrigger.cleanValueLabel}
+                  </span>
+                </div>
+              )}
+
               {loading && dataService ? (
                 <div className="select-input__popup__list py-1 px-1">
                   加载中...
