@@ -95,7 +95,9 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
         setPosition(pos);
       }
 
-      setIsOpen(open);
+      setTimeout(() => {
+        setIsOpen(open);
+      }, 150);
     },
     [calculatePosition, disabled]
   );
@@ -175,6 +177,9 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
                 trigger === "hover" ? () => handleTrigger(false) : undefined
               }
             >
+              {/* 连接空隙 */}
+              <div className="dropdown-arrow" />
+
               {menuItems.map((item, index) => (
                 <div key={index}>
                   <Option

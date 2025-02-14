@@ -16,6 +16,18 @@
   transition: opacity 0.2s, transform 0.2s;
   pointer-events: none;
 
+  /* Prevent the hover threshold from failing */
+  &::after {
+    content: "";
+    display: block;
+    background-color: transparent;
+    position: absolute;
+    top: -10px;
+    left: 0;
+    width: 100%;
+    height: 20px;
+  }
+
   &.open {
     opacity: 1;
     transform: translateY(0);
