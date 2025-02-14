@@ -18,9 +18,11 @@ which does not contain any external style and script libraries.
 
 # Components List
 
-| WEB ELEMENTS | FORMS    | OTHER        |
-| ------------ | -------- | ------------ |
-| Modal mask   | Checkbox | Empty-notice |
-| selectInput  | radio    | Popover      |
-| toolTips     | Input    |              |
-| table        |          |              |
+| WEB ELEMENTS | FORMS    | Navigation    | OTHER        |
+| ------------ | -------- | ------------- | ------------ |
+| Modal Dialog | Checkbox | Dropdown Menu | Empty-notice |
+| selectInput  | radio    |               | Popover      |
+| toolTips     | Input    |               |              |
+| table        |          |               |              |
+| Trees        |          |               |              |
+
