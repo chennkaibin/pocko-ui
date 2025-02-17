@@ -1,5 +1,5 @@
 import React from "react";
-import "./EmptyNotice.scss";
+import "./Index.scss";
 
 import { clsWrite, clsCombine } from "../../../utils/cls";
 
