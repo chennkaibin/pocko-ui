@@ -2,7 +2,10 @@ import React, { useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import "./Index.scss";
 
+import { clsCombine, clsWrite } from "../../../utils/cls";
+
 interface Props {
+  wrapperClassName?: string;
   delay?: number;
   color?: string;
   children: React.ReactNode;
@@ -11,6 +14,7 @@ interface Props {
 }
 
 export default function ToolTips({
+  wrapperClassName,
   delay = 300,
   color = "#000",
   children,
@@ -59,7 +63,7 @@ export default function ToolTips({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       ref={tooltipRef}
-      className="tooltip-container"
+      className={clsCombine(wrapperClassName, "tooltip-container")}
     >
       <div className="tooltip-container-content" ref={contentRef}>
         {children}
