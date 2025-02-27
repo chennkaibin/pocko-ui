@@ -1,11 +1,12 @@
-import React, { ReactNode, forwardRef, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import "./Index.scss";
 
 import { clsWrite, clsCombine } from "../../../utils/cls";
 
 interface Props {
-  zIndex?: String | any;
+  modalRef?: any;
+  zIndex?: number;
   heading?: string;
   modalSize?: "full" | "xl" | "lg" | "common";
   modalContentClassName?: string;
@@ -13,10 +14,10 @@ interface Props {
   modalBodyClassName?: string;
   modalFooterClassName?: string;
   // ----------------------------------
-  children?: ReactNode;
+  children?: React.ReactNode;
   // ----------------------------------
-  header?: ReactNode;
-  footer?: ReactNode;
+  header?: React.ReactNode;
+  footer?: React.ReactNode;
 
   onOpen?: Function;
   onSubmit?: Function;
@@ -25,76 +26,96 @@ interface Props {
   onClose?: Function;
 
   // ----------------------------------
-  triggerContent: ReactNode;
+  triggerContent: React.ReactNode;
   triggerClassName?: string;
 }
 
-const Mask = forwardRef(function Mask(
-  {
-    modalSize = "common",
-    heading,
-    onSubmit,
-    children,
-    operationName = "确认",
-    modalBodyHeight,
-    onOpen,
-    onClose,
-    zIndex,
-    header,
-    footer,
-    modalContentClassName,
-    modalHeaderClassName,
-    modalBodyClassName,
-    modalFooterClassName,
-    triggerContent,
-    triggerClassName,
-  }: Props,
-  ref: any
-) {
+export default function Mask({
+  modalRef,
+  modalSize = "common",
+  heading,
+  onSubmit,
+  children,
+  operationName = "确认",
+  modalBodyHeight,
+  onOpen,
+  onClose,
+  zIndex,
+  header,
+  footer,
+  modalContentClassName,
+  modalHeaderClassName,
+  modalBodyClassName,
+  modalFooterClassName,
+  triggerContent,
+  triggerClassName,
+}: Props) {
+  const [isMounted, setIsMounted] = useState(false);
+  const containerRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    containerRef.current = document.createElement("div");
+    containerRef.current.className = `modal-container ${
+      triggerClassName || ""
+    }`;
+    document.body.appendChild(containerRef.current);
+    setIsMounted(true);
+
+    return () => {
+      if (containerRef.current) {
+        containerRef.current.remove();
+        setIsMounted(false);
+      }
+    };
+  }, []);
+
   function onOpenClick() {
+    if (modalRef.current === null) return;
+
     if (onOpen) {
       setTimeout(() => {
         onOpen();
       }, 150);
     }
 
-    ref.current!.style.display = "block";
+    modalRef.current!.style.display = "block";
     setTimeout(() => {
-      ref.current!.classList.add("show");
+      modalRef.current!.classList.add("show");
     }, 100);
   }
 
   function onCloseClick() {
+    if (modalRef.current === null) return;
+
     if (onClose) {
       setTimeout(() => {
         onClose();
       }, 150);
     }
 
-    ref.current.classList.remove("show");
+    modalRef.current.classList.remove("show");
     setTimeout(() => {
-      ref.current.style.display = "none";
+      modalRef.current.style.display = "none";
     }, 100);
   }
 
   const modalContent = (
     <div
-      ref={ref}
+      ref={modalRef}
       className="modal fade bg-black bg-opacity-25 toast"
       tabIndex={-1}
       role="dialog"
-      style={{ zIndex: `${zIndex}` }}
+      style={{ zIndex: zIndex }}
     >
       <div
-        className={`modal-dialog modal-dialog-centered modal-dialog-scrollable ${
-          modalSize === "full"
-            ? "modal-fullscreen"
-            : modalSize === "xl"
-            ? "modal-xl"
-            : modalSize === "lg"
-            ? "modal-lg"
-            : ""
-        }`}
+        className={clsCombine(
+          "modal-dialog modal-dialog-centered modal-dialog-scrollable",
+          {
+            "modal-fullscreen": modalSize === "full",
+            "modal-xl": modalSize === "xl",
+            "modal-lg": modalSize === "lg",
+          }
+        )}
       >
         <div className={clsWrite(modalContentClassName, "modal-content")}>
           {header ? (
@@ -163,9 +184,9 @@ const Mask = forwardRef(function Mask(
         </div>
       )}
 
-      {createPortal(modalContent, document.body)}
+      {isMounted &&
+        containerRef.current &&
+        createPortal(modalContent, containerRef.current as HTMLElement)}
     </>
   );
-});
-
-export default Mask;
+}
