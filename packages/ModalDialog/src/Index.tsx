@@ -1,145 +1,122 @@
 import React, { ReactNode, forwardRef, useEffect } from "react";
 import { createPortal } from "react-dom";
-import useDraggable from "../../../utils/useDraggable";
 import "./Index.scss";
 
+import { clsWrite, clsCombine } from "../../../utils/cls";
+
 interface Props {
-  maskWidth: string;
-  maxWidth?: string;
-  title: string;
-  confirmClickFn: Function;
-  children: ReactNode;
-  modalBodyHeight?: string;
-  operationName?: string;
-  closeModalClick?: Function;
-  footBtn?: Boolean;
-  body?: Boolean;
-  isDraggable?: Boolean | String;
   zIndex?: String | any;
+  heading?: string;
+  modalSize?: "full" | "xl" | "lg" | "common";
+  modalContentClassName?: string;
+  modalHeaderClassName?: string;
+  modalBodyClassName?: string;
+  modalFooterClassName?: string;
+  // ----------------------------------
+  children?: ReactNode;
+  // ----------------------------------
   header?: ReactNode;
   footer?: ReactNode;
+
+  onOpen?: Function;
+  onSubmit?: Function;
+  modalBodyHeight?: string;
+  operationName?: string;
+  onClose?: Function;
+
+  // ----------------------------------
+  triggerContent: ReactNode;
+  triggerClassName?: string;
 }
 
 const Mask = forwardRef(function Mask(
   {
-    maskWidth,
-    maxWidth,
-    title,
-    confirmClickFn,
+    modalSize = "common",
+    heading,
+    onSubmit,
     children,
     operationName = "确认",
-    modalBodyHeight = "auto",
-    closeModalClick,
-    footBtn = true,
-    body = true,
-    isDraggable = false,
+    modalBodyHeight,
+    onOpen,
+    onClose,
     zIndex,
     header,
     footer,
+    modalContentClassName,
+    modalHeaderClassName,
+    modalBodyClassName,
+    modalFooterClassName,
+    triggerContent,
+    triggerClassName,
   }: Props,
   ref: any
 ) {
-  const handleDisappearClick: React.MouseEventHandler<
-    HTMLButtonElement
-  > = () => {
-    if (closeModalClick) {
+  function onOpenClick() {
+    if (onOpen) {
       setTimeout(() => {
-        closeModalClick();
+        onOpen();
       }, 150);
     }
 
-    resetModal();
+    ref.current!.style.display = "block";
+    setTimeout(() => {
+      ref.current!.classList.add("show");
+    }, 100);
+  }
+
+  function onCloseClick() {
+    if (onClose) {
+      setTimeout(() => {
+        onClose();
+      }, 150);
+    }
+
     ref.current.classList.remove("show");
     setTimeout(() => {
       ref.current.style.display = "none";
     }, 100);
-  };
-
-  const { dragContentHandle, dragHandle, resetPosition }: any = useDraggable({
-    enabled: isDraggable ? true : false, // if `false`, drag and drop is disabled
-    preventOutsideScreen: {
-      xAxis: true,
-      yAxis: true,
-    },
-    onStart: (
-      coordinates: Record<string, number>,
-      handleEl: HTMLElement | null,
-      contentEl: HTMLElement | null
-    ) => {},
-    onDrag: (
-      coordinates: Record<string, number>,
-      handleEl: HTMLElement | null,
-      contentEl: HTMLElement | null
-    ) => {
-      // console.log(coordinates) // {dx: -164, dy: -37}
-    },
-    onStop: (
-      coordinates: Record<string, number>,
-      handleEl: HTMLElement | null,
-      contentEl: HTMLElement | null
-    ) => {},
-  });
-
-  const resetModal = () => {
-    resetPosition?.();
-  };
+  }
 
   const modalContent = (
     <div
       ref={ref}
       className="modal fade bg-black bg-opacity-25 toast"
-      id="exampleModalLive"
       tabIndex={-1}
       role="dialog"
       style={{ zIndex: `${zIndex}` }}
     >
       <div
-        className={
-          maskWidth === "full"
-            ? "modal-dialog modal-dialog-centered modal-dialog-scrollable modal-fullscreen"
-            : maskWidth === "xl"
-            ? "modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl"
-            : maskWidth === "lg"
-            ? "modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg"
-            : "modal-dialog modal-dialog-centered modal-dialog-scrollable"
-        }
-        style={{ maxWidth: maxWidth }}
+        className={`modal-dialog modal-dialog-centered modal-dialog-scrollable ${
+          modalSize === "full"
+            ? "modal-fullscreen"
+            : modalSize === "xl"
+            ? "modal-xl"
+            : modalSize === "lg"
+            ? "modal-lg"
+            : ""
+        }`}
       >
-        <div className="modal-content" ref={dragContentHandle}>
+        <div className={clsWrite(modalContentClassName, "modal-content")}>
           {header ? (
-            <div
-              className={`${isDraggable ? "anes-care-cursor-all-scroll" : ""}`}
-              style={{ cursor: `${isDraggable ? "pointer" : "auto"}` }}
-              ref={dragHandle}
-            >
-              {header}
-            </div>
+            header
           ) : (
-            <div
-              className={`modal-header ${
-                isDraggable ? "anes-care-cursor-all-scroll" : ""
-              }`}
-              style={{ cursor: `${isDraggable ? "pointer" : "auto"}` }}
-              ref={dragHandle}
-            >
-              <h1 className="modal-title fs-5" id="exampleModalLiveLabel">
-                {title}
-              </h1>
+            <div className={clsWrite(modalHeaderClassName, "modal-header")}>
+              <h1 className="modal-title fs-5">{heading}</h1>
+
               <button
                 type="button"
                 className="btn-close"
                 data-bs-dismiss="modal"
                 aria-label="Close"
-                onClick={handleDisappearClick}
+                onClick={onCloseClick}
               ></button>
             </div>
           )}
 
           <div
-            className={`modal-body`}
+            className={clsWrite(modalBodyClassName, "modal-body")}
             style={{
-              height:
-                modalBodyHeight == "auto" ? "auto" : `${modalBodyHeight}vh`,
+              height: modalBodyHeight ? `${modalBodyHeight}vh` : "auto",
             }}
           >
             {children}
@@ -148,21 +125,22 @@ const Mask = forwardRef(function Mask(
           {footer ? (
             footer
           ) : (
-            <div className="modal-footer">
-              {footBtn && (
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={handleDisappearClick}
-                >
-                  取消
-                </button>
-              )}
+            <div className={clsWrite(modalFooterClassName, "modal-footer")}>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={onCloseClick}
+              >
+                取消
+              </button>
+
               <button
                 type="button"
                 className="btn btn-primary"
                 onClick={() => {
-                  confirmClickFn();
+                  if (onSubmit) {
+                    onSubmit();
+                  }
                 }}
               >
                 {operationName}
@@ -174,7 +152,20 @@ const Mask = forwardRef(function Mask(
     </div>
   );
 
-  return body ? createPortal(modalContent, document.body) : modalContent;
+  return (
+    <>
+      {triggerContent && (
+        <div
+          className={clsWrite(triggerClassName, "trigger-container")}
+          onClick={onOpenClick}
+        >
+          {triggerContent}
+        </div>
+      )}
+
+      {createPortal(modalContent, document.body)}
+    </>
+  );
 });
 
 export default Mask;
