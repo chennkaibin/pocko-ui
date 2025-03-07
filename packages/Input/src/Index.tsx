@@ -16,6 +16,7 @@ import { clsWrite, clsCombine } from "../../../utils/cls";
 interface InputProps {
   id?: string | number | any; // input框的 id
   name?: string | any; // input框的 name
+  inputRef?: any; // input绑定的ref
 
   size?: string | number; // 宽度
   label?: string | React.ReactNode; // 添加了 label 支持
@@ -50,6 +51,7 @@ const Input = forwardRef((props: InputProps, externalRef: any) => {
   const {
     id,
     name,
+    inputRef,
     wrapperClassName,
     controlGroupWrapperClassName,
     defaultValue,
@@ -163,6 +165,7 @@ const Input = forwardRef((props: InputProps, externalRef: any) => {
           ) : null}
 
           <input
+            ref={inputRef}
             id={idRes}
             name={name}
             type={typeRes}
