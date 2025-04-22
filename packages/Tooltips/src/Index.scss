@@ -1,46 +1,78 @@
-.tooltip-container {
+// Index.scss
+.tooltip-wrapper {
+  display: inline-block;
+  position: relative;
   cursor: pointer;
+
+  .tooltip-content {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
-.tooltip-container-content {
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-}
-
-.my-tooltip {
+.tooltip-bubble {
   position: absolute;
   z-index: 9999;
   max-width: 220px;
-  padding: 8px;
-  border-radius: 4px;
+  padding: 5px;
+  border-radius: 5px;
+  background: var(--tooltip-color);
   color: #fff;
-  display: flex;
-  flex-direction: column;
-  /* 动态颜色 */
-  background-color: var(--tooltip-color, #000);
+  pointer-events: none;
+  animation: fadeIn 0.2s ease-out;
+
+  &::before {
+    content: "";
+    position: absolute;
+    border: 6px solid transparent;
+  }
+
+  // 位置样式
+  &.top {
+    &::before {
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border-top-color: var(--tooltip-color);
+    }
+  }
+
+  &.bottom {
+    &::before {
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border-bottom-color: var(--tooltip-color);
+    }
+  }
+
+  &.left {
+    &::before {
+      left: 100%;
+      top: 50%;
+      transform: translateY(-50%);
+      border-left-color: var(--tooltip-color);
+    }
+  }
+
+  &.right {
+    &::before {
+      right: 100%;
+      top: 50%;
+      transform: translateY(-50%);
+      border-right-color: var(--tooltip-color);
+    }
+  }
 }
 
-/* 箭头上方 */
-.my-tooltip.bottom::before {
-  content: "";
-  position: absolute;
-  bottom: 100%; /* 箭头位于 tooltip 上方 */
-  left: 50%;
-  transform: translateX(-50%);
-  border-width: 5px;
-  border-style: solid;
-  border-color: transparent transparent var(--tooltip-color, #000) transparent;
-}
-
-/* 箭头下方 */
-.my-tooltip.top::before {
-  content: "";
-  position: absolute;
-  top: 100%; /* 箭头位于 tooltip 下方 */
-  left: 50%;
-  transform: translateX(-50%);
-  border-width: 5px;
-  border-style: solid;
-  border-color: var(--tooltip-color, #000) transparent transparent transparent;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

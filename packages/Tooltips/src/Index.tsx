@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import "./Index.scss";
 
@@ -9,8 +9,8 @@ interface Props {
   delay?: number;
   color?: string;
   children: React.ReactNode;
-  content: string;
-  position?: "top" | "bottom"; // 新增的 position 参数
+  content: string | React.ReactNode;
+  position?: "top" | "bottom" | "right" | "left";
 }
 
 export default function ToolTips({
@@ -19,66 +19,116 @@ export default function ToolTips({
   color = "#000",
   children,
   content,
-  position = "bottom", // 默认为 bottom
+  position = "bottom",
 }: Props) {
   const [isVisible, setIsVisible] = useState(false);
   const [pos, setPos] = useState({ top: 0, left: 0 });
-  const timeoutHoverIdRef = useRef<NodeJS.Timeout | null>(null);
-  const tooltipRef = useRef<HTMLDivElement | null>(null);
-  const contentRef = useRef<HTMLDivElement | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+  const targetDataRef = useRef<{
+    rect: DOMRect;
+    scrollX: number;
+    scrollY: number;
+  } | null>(null);
 
-  const handleMouseEnter = (event: React.MouseEvent<HTMLDivElement>) => {
-    const { top, left, height, width } =
-      event.currentTarget.getBoundingClientRect();
-    const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
-    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+  const calculatePosition = (
+    rect: DOMRect,
+    scrollX: number,
+    scrollY: number,
+    tooltipWidth: number,
+    tooltipHeight: number
+  ) => {
+    const spacing = 10; // 与目标元素的间距
+    let top = 0;
+    let left = 0;
 
-    // 获取 `tooltip-container-content` 的高度
-    const contentHeight = contentRef.current?.offsetHeight || 0;
+    switch (position) {
+      case "top":
+        top = rect.top + scrollY - tooltipHeight - spacing;
+        left = rect.left + scrollX + rect.width / 2 - tooltipWidth / 2;
+        break;
+      case "bottom":
+        top = rect.top + scrollY + rect.height + spacing;
+        left = rect.left + scrollX + rect.width / 2 - tooltipWidth / 2;
+        break;
+      case "left":
+        top = rect.top + scrollY + rect.height / 2 - tooltipHeight / 2;
+        left = rect.left + scrollX - tooltipWidth - spacing;
+        break;
+      case "right":
+        top = rect.top + scrollY + rect.height / 2 - tooltipHeight / 2;
+        left = rect.left + scrollX + rect.width + spacing;
+        break;
+    }
 
-    const tooltipTop =
-      position === "top"
-        ? top + scrollY - contentHeight // 在上方显示
-        : top + height + scrollY + 10; // 在下方显示
+    return { top, left };
+  };
 
-    setPos({
-      top: tooltipTop,
-      left: left + width / 2 + scrollX,
-    });
+  const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    targetDataRef.current = {
+      rect,
+      scrollX: window.pageXOffset,
+      scrollY: window.pageYOffset,
+    };
 
-    timeoutHoverIdRef.current = setTimeout(() => {
+    // 首次预估定位
+    const estimatedSize =
+      position === "left" || position === "right"
+        ? { width: 200, height: 40 }
+        : { width: 150, height: 60 };
+
+    setPos(
+      calculatePosition(
+        rect,
+        targetDataRef.current.scrollX,
+        targetDataRef.current.scrollY,
+        estimatedSize.width,
+        estimatedSize.height
+      )
+    );
+
+    timeoutRef.current = setTimeout(() => {
       setIsVisible(true);
     }, delay);
   };
 
-  const handleMouseLeave = () => {
-    if (timeoutHoverIdRef.current) {
-      clearTimeout(timeoutHoverIdRef.current);
+  useEffect(() => {
+    if (isVisible && tooltipRef.current && targetDataRef.current) {
+      // 根据实际尺寸重新计算
+      const { rect, scrollX, scrollY } = targetDataRef.current;
+      const tooltipWidth = tooltipRef.current.offsetWidth;
+      const tooltipHeight = tooltipRef.current.offsetHeight;
+
+      setPos(
+        calculatePosition(rect, scrollX, scrollY, tooltipWidth, tooltipHeight)
+      );
     }
+  }, [isVisible]);
+
+  const handleMouseLeave = () => {
+    timeoutRef.current && clearTimeout(timeoutRef.current);
     setIsVisible(false);
   };
 
   return (
     <div
+      ref={containerRef}
+      className={clsCombine(wrapperClassName, "tooltip-container")}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      ref={tooltipRef}
-      className={clsCombine(wrapperClassName, "tooltip-container")}
     >
-      <div className="tooltip-container-content" ref={contentRef}>
-        {children}
-      </div>
+      <div className="tooltip-content">{children}</div>
 
       {isVisible &&
         createPortal(
           <div
-            className={`my-tooltip badge pos-absolute p-1 rounded text-white text-wrap ${position}`}
+            ref={tooltipRef}
+            className={`tooltip-bubble ${position}`}
             style={{
               top: pos.top,
               left: pos.left,
-              backgroundColor: color,
-              transform: "translateX(-50%)",
-              // 设置CSS变量 --tooltip-color
               ["--tooltip-color" as any]: color,
             }}
           >
