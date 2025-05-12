@@ -10,13 +10,18 @@
 
     .select-input__content__arrow {
       position: absolute;
-      top: 5px;
-      right: 5px;
-      transition: transform 0.3s ease;
+      top: 50%;
+      right: 0.5rem;
+      transform: translateY(-50%);
+      cursor: pointer;
+      transition: transform 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .select-input__content__arrow--reverse {
-      transform: rotate(180deg);
+      transform: translateY(-50%) rotate(180deg);
     }
 
     .select-input__content__word__container {
