@@ -23,7 +23,7 @@ interface Props {
   type?: "COMMON" | "MULTI";
   label?: string | React.ReactNode; // 添加了 label 支持
   wrapperClassName?: string; // 最外层的样式名字
-  wrapperConentInputClassName?: string; // 内部input的样式名字
+  wrapperContentInputClassName?: string; // 内部input的样式名字
   popupMenuClassName?: string; // 弹出层的样式名字
   renderOption?: (item: any) => React.ReactNode; // 自定义选项渲染内容
   id: string | any;
@@ -41,6 +41,7 @@ interface Props {
   onBlured?: Function | any;
   size?: string | any;
   zIndex?: string | any;
+  isDisable?: boolean;
   isHandleInput?: boolean;
   isDisableBodyScroll?: boolean;
   cleanTrigger?: CleanTriggerConfig;
@@ -54,7 +55,7 @@ export default function SelectInput({
   type = "COMMON",
   label,
   wrapperClassName,
-  wrapperConentInputClassName,
+  wrapperContentInputClassName,
   popupMenuClassName,
   id,
   name,
@@ -71,6 +72,7 @@ export default function SelectInput({
   onBlured,
   size = "auto",
   zIndex = 1101,
+  isDisable = false,
   isHandleInput = false,
   isDisableBodyScroll = false,
   dataService,
@@ -307,7 +309,7 @@ export default function SelectInput({
           onChange={handleInputChange}
           id={inputId}
           className={clsCombine(
-            clsWrite(wrapperConentInputClassName, "form-control"),
+            clsWrite(wrapperContentInputClassName, "form-control"),
             "select-input__content__input"
           )}
           onFocus={() => {
@@ -355,6 +357,7 @@ export default function SelectInput({
           }}
           onKeyDown={handleKeyDown}
           autoComplete="off"
+          disabled={isDisable}
         />
 
         <span
