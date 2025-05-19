@@ -9,6 +9,7 @@ import { createPortal } from "react-dom";
 import "./Index.scss";
 
 import { clsWrite, clsCombine } from "../../../utils/cls";
+import useDraggable from "../../../utils/hooks/useDraggable";
 
 interface Props {
   zIndex?: number;
@@ -28,6 +29,7 @@ interface Props {
   onClose?: Function;
   triggerContent?: React.ReactNode;
   triggerClassName?: string;
+  isDraggable?: boolean;
 }
 
 const Mask = forwardRef(
@@ -50,6 +52,7 @@ const Mask = forwardRef(
       modalFooterClassName,
       triggerContent,
       triggerClassName,
+      isDraggable = false,
     }: Props,
     ref: React.ForwardedRef<any>
   ) => {
@@ -109,6 +112,15 @@ const Mask = forwardRef(
       close: onCloseClick,
     }));
 
+    // Draggable functionality
+    const { dragContentHandle, dragHandle, resetPosition }: any = useDraggable({
+      enabled: isDraggable, // if `false`, drag and drop is disabled
+      preventOutsideScreen: {
+        xAxis: false,
+        yAxis: false,
+      },
+    });
+
     const modalContent = (
       <div
         ref={modalRef}
@@ -127,11 +139,29 @@ const Mask = forwardRef(
             }
           )}
         >
-          <div className={clsWrite(modalContentClassName, "modal-content")}>
+          <div
+            ref={dragContentHandle}
+            className={clsWrite(modalContentClassName, "modal-content")}
+          >
             {header ? (
-              header
+              <div
+                ref={dragHandle}
+                className={clsCombine({
+                  "modal-header__draggable": isDraggable,
+                })}
+              >
+                {header}
+              </div>
             ) : (
-              <div className={clsWrite(modalHeaderClassName, "modal-header")}>
+              <div
+                ref={dragHandle}
+                className={clsCombine(
+                  clsWrite(modalHeaderClassName, "modal-header"),
+                  {
+                    "modal-header__draggable": isDraggable,
+                  }
+                )}
+              >
                 <h1 className="modal-title fs-5">{heading}</h1>
 
                 <button

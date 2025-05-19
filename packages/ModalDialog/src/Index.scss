@@ -1,0 +1,7 @@
+.modal-header__draggable {
+  cursor: grab; /* 默认抓手图标 */
+  user-select: none; /* 禁止文字选中 */
+}
+.modal-header__draggable:active {
+  cursor: grabbing; /* 按下时的抓取图标 */
+}

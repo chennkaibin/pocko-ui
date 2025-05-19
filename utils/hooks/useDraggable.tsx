@@ -44,7 +44,7 @@ const App = () => {
 
  */
 
-import React, { useEffect, useState, useCallback, MouseEvent } from "react";
+import { useEffect, useState, useCallback, MouseEvent } from "react";
 
 interface PreventOutsideScreenProps {
   xAxis: boolean;
