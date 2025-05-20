@@ -102,6 +102,8 @@ const Mask = forwardRef(
 
       modalRef.current!.classList.remove("show");
       setTimeout(() => {
+        if (isDraggable) resetPosition();
+
         modalRef.current!.style.display = "none";
       }, 100);
     };
