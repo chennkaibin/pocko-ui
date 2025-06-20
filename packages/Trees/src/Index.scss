@@ -43,6 +43,7 @@
         align-items: center;
 
         .arrow {
+          min-width: 1em;
           cursor: pointer;
           z-index: 5;
           display: inline-flex;

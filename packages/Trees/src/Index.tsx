@@ -27,16 +27,16 @@ const getMenuNodes = (
   toggleNode: (node: any) => void,
   chooseId: any,
   handleItemClick: (id: any) => void,
+  checkHasChildren: (node: any) => boolean,
   renderCustomContent?: (item: any) => React.ReactNode,
   arrowIcons?: React.ReactNode[],
-  leafIcon?: React.ReactNode,
-  hasChildrenFn?: (node: any) => boolean
+  leafIcon?: React.ReactNode
 ) => {
   return (
     <ul className="tree__diagram">
       {menuList.map((item: any, index: any) => {
         const isChosen = chooseId == item[id]; // 判断是否被点击
-        const hasChildren = hasChildrenFn ? hasChildrenFn(item) : false; // 判断是否有子节点(根据外部列表参数判断)
+        const hasChildren = checkHasChildren(item); // 判断是否有子节点(根据外部列表参数判断)
 
         return (
           <li
@@ -47,6 +47,7 @@ const getMenuNodes = (
           >
             <div className="tree__item">
               <span
+                data-isexpand={hasChildren}
                 className="arrow"
                 onClick={() => {
                   if (hasChildren) toggleNode(item);
@@ -156,10 +157,10 @@ const getMenuNodes = (
                   toggleNode,
                   chooseId,
                   handleItemClick,
+                  checkHasChildren,
                   renderCustomContent,
                   arrowIcons,
-                  leafIcon,
-                  hasChildrenFn
+                  leafIcon
                 )}
               </div>
             )}
@@ -202,26 +203,40 @@ export default function Index({
   const updateTreeNode = (
     nodes: any[],
     nodeId: any,
-    callback: (node: any) => void
-  ) => {
+    callback: (node: any) => any
+  ): any[] => {
     return nodes.map((node) => {
       if (node[id] === nodeId) {
-        callback(node); // 修改当前节点
-      } else if (node.children && node.children.length > 0) {
-        node.children = updateTreeNode(node.children, nodeId, callback); // 递归修改子节点
+        return {
+          ...node,
+          ...callback(node),
+        };
+      } else if (Array.isArray(node.children) && node.children.length > 0) {
+        return {
+          ...node,
+          children: updateTreeNode(node.children, nodeId, callback),
+        };
+      } else {
+        return node;
       }
-      return node;
     });
   };
 
+  // 判断节点
+  const checkHasChildren = (n: any) =>
+    hasChildrenFn?.(n) || (Array.isArray(n.children) && n.children.length > 0);
+
   // 节点点击逻辑
   const toggleNode = (node: any) => {
-    if (!node.children || node.children.length === 0) {
+    const mayHave = checkHasChildren(node); // 业务上“可能有子节点”
+    const loaded = Array.isArray(node.children) && node.children.length > 0; // 确实已经往 children 塞了数据
+
+    if (mayHave && !loaded) {
       // 如果没有子节点，动态加载
       setTreeData((prevData: any) =>
-        updateTreeNode(prevData, node[id], (n) => {
-          n.loading = true;
-        })
+        updateTreeNode(prevData, node[id], (n) => ({
+          loading: true,
+        }))
       );
 
       if (dataService && dataServiceFunction) {
@@ -243,38 +258,38 @@ export default function Index({
             }));
 
             setTreeData((prevData: any) =>
-              updateTreeNode(prevData, node[id], (n) => {
-                n.children = [...newChildren]; // 填充子节点
-                n.active = true; // 展开当前节点
-                n.loading = false;
-              })
+              updateTreeNode(prevData, node[id], (n) => ({
+                children: [...newChildren],
+                active: true,
+                loading: false,
+              }))
             );
           } else {
             setTreeData((prevData: any) =>
-              updateTreeNode(prevData, node[id], (n) => {
-                n.children = [];
-                n.active = true;
-                n.loading = false;
-              })
+              updateTreeNode(prevData, node[id], (n) => ({
+                children: [],
+                active: true,
+                loading: false,
+              }))
             );
           }
         });
       } else {
         setTimeout(() => {
           setTreeData((prevData: any) =>
-            updateTreeNode(prevData, node[id], (n) => {
-              n.active = true;
-              n.loading = false;
-            })
+            updateTreeNode(prevData, node[id], (n) => ({
+              active: true,
+              loading: false,
+            }))
           );
         }, 100);
       }
     } else {
       // 如果已有子节点，直接切换 active 状态
       setTreeData((prevData: any) =>
-        updateTreeNode(prevData, node[id], (n) => {
-          n.active = !n.active;
-        })
+        updateTreeNode(prevData, node[id], (n) => ({
+          active: !n.active,
+        }))
       );
     }
   };
@@ -359,10 +374,10 @@ export default function Index({
             toggleNode,
             chooseId,
             handleItemClick,
+            checkHasChildren,
             renderCustomContent,
             arrowIcons,
-            leafIcon,
-            hasChildrenFn
+            leafIcon
           )}
         </nav>
       )}
