@@ -8,6 +8,7 @@ interface Props {
   wrapperClassName?: any;
   leafIcon?: React.ReactNode; // 空数据图标
   arrowIcons?: React.ReactNode[]; // 展开，关闭图标
+  hasChildrenFn?: (node: any) => boolean; // 判断是否有子节点
   id: string;
   name: string;
   data: any[];
@@ -28,13 +29,14 @@ const getMenuNodes = (
   handleItemClick: (id: any) => void,
   renderCustomContent?: (item: any) => React.ReactNode,
   arrowIcons?: React.ReactNode[],
-  leafIcon?: React.ReactNode
+  leafIcon?: React.ReactNode,
+  hasChildrenFn?: (node: any) => boolean
 ) => {
   return (
     <ul className="tree__diagram">
       {menuList.map((item: any, index: any) => {
         const isChosen = chooseId == item[id]; // 判断是否被点击
-        const hasChildren = item.child_count > 0; // 判断是否有子节点
+        const hasChildren = hasChildrenFn ? hasChildrenFn(item) : false; // 判断是否有子节点(根据外部列表参数判断)
 
         return (
           <li
@@ -156,7 +158,8 @@ const getMenuNodes = (
                   handleItemClick,
                   renderCustomContent,
                   arrowIcons,
-                  leafIcon
+                  leafIcon,
+                  hasChildrenFn
                 )}
               </div>
             )}
@@ -174,6 +177,7 @@ export default function Index({
   wrapperClassName,
   arrowIcons,
   leafIcon,
+  hasChildrenFn,
   data,
   defaultId,
   treeDataItemClick,
@@ -236,7 +240,6 @@ export default function Index({
               active: false,
               loading: false,
               children: [],
-              children_count: item.child_count ?? 0,
             }));
 
             setTreeData((prevData: any) =>
@@ -244,7 +247,6 @@ export default function Index({
                 n.children = [...newChildren]; // 填充子节点
                 n.active = true; // 展开当前节点
                 n.loading = false;
-                n.child_count = newChildren.length;
               })
             );
           } else {
@@ -315,7 +317,6 @@ export default function Index({
             ];
 
             n.children = mergedChildren; // 更新合并后的 children
-            n.child_count = mergedChildren.length;
           } else if (n[key] !== newValue[key]) {
             n[key] = newValue[key]; // 更新有差异的字段
           }
@@ -360,7 +361,8 @@ export default function Index({
             handleItemClick,
             renderCustomContent,
             arrowIcons,
-            leafIcon
+            leafIcon,
+            hasChildrenFn
           )}
         </nav>
       )}
