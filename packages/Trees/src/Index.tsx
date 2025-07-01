@@ -295,51 +295,46 @@ export default function Index({
   };
 
   // 外部调用，更新数据
-  const updatedTreeNode = (node: any, updatedId: any, newValue: any) => {
-    setTreeData((prevData: any) => {
-      // 如果 newValue 是空字符串，删除节点
-      if (newValue === "") {
-        const removeNode = (nodes: any[], nodeId: any): any[] => {
-          return nodes
-            .filter((n) => n[updatedId] !== nodeId) // 过滤掉目标节点
+  const updatedTreeNode = (idValue: any, newValue: any) => {
+    setTreeData((prevData: any[]) => {
+      // 1. 删除节点（约定 newValue === 'DELETE' 表示删除）
+      if (newValue === "DELETE") {
+        const removeNode = (nodes: any[]): any[] =>
+          nodes
+            .filter((n) => n[id] !== idValue)
             .map((n) => ({
+              // 递归删除子树里匹配的节点
               ...n,
-              children: n.children ? removeNode(n.children, nodeId) : [], // 递归处理子节点
+              children: Array.isArray(n.children) ? removeNode(n.children) : [],
             }));
-        };
 
-        return removeNode(prevData, node[updatedId]);
+        return removeNode(prevData);
       }
 
-      // 若 newValue 不是空字符串，更新节点
-      return updateTreeNode(prevData, node[updatedId], (n) => {
-        // 遍历新值的字段，与当前节点比较，更新有差异的字段
-        Object.keys(newValue).forEach((key) => {
-          if (key === "children" && Array.isArray(newValue[key])) {
-            // 合并 children
-            const existingChildren = n.children || [];
-            const newChildren = newValue[key];
-
-            // 合并逻辑：以新值为主，保留未被新值覆盖的原有子节点
-            const mergedChildren = [
-              ...existingChildren.filter(
-                (child: any) =>
-                  !newChildren.some(
-                    (newChild: any) => newChild[updatedId] === child[updatedId]
-                  )
-              ),
-              ...newChildren,
-            ];
-
-            n.children = mergedChildren; // 更新合并后的 children
-          } else if (n[key] !== newValue[key]) {
-            n[key] = newValue[key]; // 更新有差异的字段
+      // 2. 更新节点
+      const updateNode = (nodes: any[]): any[] =>
+        nodes.map((n) => {
+          if (n[id] === idValue) {
+            // 找到目标节点，合并所有 newValue 字段
+            return {
+              ...n,
+              ...newValue,
+              // 展开并停止 loading
+              active: true,
+              loading: false,
+            };
           }
+          if (Array.isArray(n.children) && n.children.length > 0) {
+            // 递归更新子节点
+            return {
+              ...n,
+              children: updateNode(n.children),
+            };
+          }
+          return n;
         });
 
-        n.active = true; // 展开当前节点
-        n.loading = false; // 停止 loading 状态
-      });
+      return updateNode(prevData);
     });
   };
 
@@ -361,6 +356,23 @@ export default function Index({
 
   useImperativeHandle(treesRef, () => ({
     updatedTreeNode,
+    // 获取父节点的方法
+    findNodeWithParentById: (targetId: any) => {
+      const recursiveFind = (nodes: any[], parent: any = null): any | null => {
+        for (const n of nodes) {
+          if (n[id] === targetId) {
+            return { node: n, parent };
+          }
+          if (Array.isArray(n.children) && n.children.length > 0) {
+            const found = recursiveFind(n.children, n);
+            if (found) return found;
+          }
+        }
+        return null;
+      };
+
+      return recursiveFind(treeData, null);
+    },
   }));
 
   return (
