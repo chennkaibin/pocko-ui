@@ -373,6 +373,9 @@ export default function Index({
 
       return recursiveFind(treeData, null);
     },
+    getTreeData: () => {
+      return treeData;
+    },
   }));
 
   return (
