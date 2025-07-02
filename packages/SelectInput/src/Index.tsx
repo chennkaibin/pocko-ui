@@ -49,6 +49,7 @@ interface Props {
   dataServiceFunction?: string; // 指定要调用的函数名称
   dataServiceFunctionParams?: any[]; // 指定要调用的函数的传参
   dataServiceRetrieve?: boolean; // 该服务类函数是否是检索类的
+  manualSearchTrigger?: boolean; // 是否默认聚焦就检索
 }
 
 export default function SelectInput({
@@ -81,6 +82,7 @@ export default function SelectInput({
   dataServiceRetrieve = false, // 默认不是检索类的
   renderOption,
   cleanTrigger,
+  manualSearchTrigger = false,
 }: Props) {
   const [keyword, setKeyword] = useState<string>("");
   const [value, setValue] = useState<any>("");
@@ -206,69 +208,63 @@ export default function SelectInput({
   }
 
   useEffect(() => {
-    if (isShow) {
-      setLoading(true);
+    if (!isShow) {
+      setDataServiceList([]);
+      setHasFetchedData(false);
+      setInitialData([]);
 
-      if (dataService && dataServiceFunction) {
-        const params = [...(dataServiceFunctionParams || [])];
+      return;
+    }
 
-        // 检查是否有 $QUERY_STRING，如果有，替换 keyword
-        const queryIndex = params.indexOf("$QUERY_STRING");
-        if (queryIndex !== -1) {
-          params[queryIndex] = keyword || "*"; // 替换为 keyword 或 '*'
-        }
+    // 若启用手动检索，且 keyword 为空，不发起接口调用
+    if (manualSearchTrigger && !keyword) {
+      setLoading(false);
+      setDataServiceList([]);
 
-        // 如果该参数是true，则代表是retrieve接口，实时搜索
-        if (dataServiceRetrieve) {
+      return;
+    }
+
+    setLoading(true);
+
+    if (dataService && dataServiceFunction) {
+      const params = [...(dataServiceFunctionParams || [])];
+
+      const queryIndex = params.indexOf("$QUERY_STRING");
+      if (queryIndex !== -1) {
+        params[queryIndex] = keyword || "*";
+      }
+
+      if (dataServiceRetrieve) {
+        dataService[dataServiceFunction](...params)
+          .then((result: any) => {
+            setDataServiceList(result || []);
+          })
+          .finally(() => {
+            setLoading(false);
+          });
+      } else {
+        if (!hasFetchedData) {
           dataService[dataServiceFunction](...params)
             .then((result: any) => {
-              if (result.length > 0) {
-                setDataServiceList(result);
-              } else {
-                setDataServiceList([]);
-              }
+              setHasFetchedData(true);
+              setInitialData(result || []);
+              setDataServiceList(result || []);
             })
             .finally(() => {
               setLoading(false);
             });
         } else {
-          if (!hasFetchedData) {
-            // 如果没有调用过接口，则调用一次
-            dataService[dataServiceFunction](...params)
-              .then((result: any) => {
-                setHasFetchedData(true); // 标记已经获取过数据
-
-                if (result.length > 0) {
-                  setInitialData(result); // 保存原始数据
-                  setDataServiceList(result);
-                } else {
-                  setDataServiceList([]);
-                  setInitialData([]);
-                }
-              })
-              .finally(() => {
-                setLoading(false);
-              });
-          } else {
-            // 本地过滤检索
-            const filteredList = handleSearch(keyword, initialData);
-
-            setDataServiceList(filteredList);
-            setLoading(false);
-          }
+          const filteredList = handleSearch(keyword, initialData);
+          setDataServiceList(filteredList);
+          setLoading(false);
         }
-      } else {
-        const filteredList = handleSearch(keyword, dropdownRender);
-
-        setDataServiceList(filteredList);
-        setLoading(false);
       }
     } else {
-      setDataServiceList([]);
-      setHasFetchedData(false);
-      setInitialData([]);
+      const filteredList = handleSearch(keyword, dropdownRender);
+      setDataServiceList(filteredList);
+      setLoading(false);
     }
-  }, [keyword, isShow, dropdownRender]);
+  }, [keyword, isShow, dropdownRender, manualSearchTrigger]);
 
   useEffect(() => {
     if (defaultValue) {
