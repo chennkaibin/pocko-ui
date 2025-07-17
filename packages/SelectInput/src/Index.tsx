@@ -84,7 +84,7 @@ export default function SelectInput({
   cleanTrigger,
   manualSearchTrigger = false,
 }: Props) {
-  const [keyword, setKeyword] = useState<string>("");
+  const [keyword, setKeyword] = useState<any>(null);
   const [value, setValue] = useState<any>("");
   const [isShow, setIsShow] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
@@ -120,7 +120,7 @@ export default function SelectInput({
 
   // input框输入
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = event.target.value.trim().toLowerCase();
+    const newValue = event.target.value.toLowerCase();
     setKeyword(newValue);
 
     // 当允许手动输入时，触发 onChange 事件，将输入值传递给父组件
@@ -144,7 +144,7 @@ export default function SelectInput({
     }
 
     setValue(item[name]);
-    setKeyword(""); // 清空关键词以重置列表
+    setKeyword(null); // 清空关键词以重置列表
     setFocusedOption(null); // 重置焦点选项为 null
 
     // 失去焦点
@@ -193,7 +193,7 @@ export default function SelectInput({
   function clearSelection() {
     setIsShow(false);
     setValue("");
-    setKeyword("");
+    setKeyword(null);
     setFocusedOption(null); // 重置焦点
 
     if (cleanTrigger?.cleanFunc) {
@@ -216,8 +216,8 @@ export default function SelectInput({
       return;
     }
 
-    // 若启用手动检索，且 keyword 为空，不发起接口调用
-    if (manualSearchTrigger && !keyword) {
+    // 若启用手动检索，且 keyword 为 null，不发起接口调用
+    if (manualSearchTrigger && keyword == null) {
       setLoading(false);
       setDataServiceList([]);
 
@@ -231,7 +231,7 @@ export default function SelectInput({
 
       const queryIndex = params.indexOf("$QUERY_STRING");
       if (queryIndex !== -1) {
-        params[queryIndex] = keyword || "*";
+        params[queryIndex] = keyword;
       }
 
       if (dataServiceRetrieve) {
@@ -315,7 +315,7 @@ export default function SelectInput({
             }
 
             if (type === "MULTI") {
-              setKeyword("");
+              setKeyword(null);
             }
 
             // 外部聚焦方法
@@ -344,7 +344,7 @@ export default function SelectInput({
               }
 
               if (type === "COMMON") {
-                setKeyword("");
+                setKeyword(null);
                 // setIsShow(false);
               }
 
