@@ -187,6 +187,8 @@ export default function SelectInput({
 
   // 检索
   const handleSearch = (keyword: string, searchArray: any[]) => {
+    if (keyword == null) return searchArray;
+
     const filteredList = searchArray.filter((obj: any) => {
       const nameMatch = obj[name] ? obj[name]?.includes(keyword) : false;
       const kbcodeMatch = obj[kbcode] ? obj[kbcode].includes(keyword) : false;
