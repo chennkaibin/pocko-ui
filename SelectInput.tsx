@@ -42,14 +42,12 @@ interface Props {
   isDisableBodyScroll?: boolean
   cleanTrigger?: CleanTriggerConfig
   dataService?: any // 添加服务类作为参数
-  dataServiceFunction?: string // 指定要调用的函数名称（初始化用）
-  dataServiceFunctionParams?: any[] // 指定要调用的函数的传参（初始化用）
+  dataServiceFunction?: string // 指定要调用的函数名称
+  dataServiceFunctionParams?: any[] // 指定要调用的函数的传参
   dataServiceRetrieve?: boolean // 该服务类函数是否是检索类的
-  // 新增：搜索时使用的服务配置
-  searchDataService?: any // 搜索时使用的服务类
-  searchDataServiceFunction?: string // 搜索时使用的函数名称
-  searchDataServiceFunctionParams?: any[] // 搜索时使用的函数传参
   manualSearchTrigger?: boolean // 是否默认聚焦就检索
+  // 新增：是否启用双接口模式（初始化用getList，搜索用retrieve）
+  enableDualMode?: boolean
 }
 
 export default function SelectInput({
@@ -77,16 +75,13 @@ export default function SelectInput({
   isDisable = false,
   isDisableBodyScroll = false,
   dataService,
-  dataServiceFunction = 'getList', // 改为默认调用 getList 函数（初始化）
-  dataServiceFunctionParams, // 调用函数的传参（初始化）
+  dataServiceFunction = 'retrieveList', // 默认调用 retrieveList 函数
+  dataServiceFunctionParams, // 调用函数的传参
   dataServiceRetrieve = false, // 默认不是检索类的
-  // 新增：搜索相关参数
-  searchDataService,
-  searchDataServiceFunction = 'retrieve', // 搜索时默认调用 retrieve 函数
-  searchDataServiceFunctionParams, // 搜索时调用函数的传参
   renderOption,
   cleanTrigger,
   manualSearchTrigger = false,
+  enableDualMode = false, // 默认不启用双接口模式
 }: Props) {
   const [keyword, setKeyword] = useState<any>(null)
   const [value, setValue] = useState<any>('')
@@ -235,22 +230,19 @@ export default function SelectInput({
 
     setLoading(true)
 
-    // 判断是搜索场景还是初始化场景
-    const isSearching = keyword != null && keyword !== ''
-    
-    if (isSearching) {
-      // 搜索场景：使用搜索相关的服务配置
-      const currentService = searchDataService || dataService
-      const currentFunction = searchDataServiceFunction
-      const currentParams = [...(searchDataServiceFunctionParams || [])]
-
-      if (currentService && currentFunction) {
-        const queryIndex = currentParams.indexOf('$QUERY_STRING')
+    if (enableDualMode && dataService) {
+      // 启用双接口模式
+      const isSearching = keyword != null && keyword !== ''
+      
+      if (isSearching) {
+        // 搜索模式：调用 retrieve 接口
+        const params = [...(dataServiceFunctionParams || [])]
+        const queryIndex = params.indexOf('$QUERY_STRING')
         if (queryIndex !== -1) {
-          currentParams[queryIndex] = keyword
+          params[queryIndex] = keyword
         }
 
-        currentService[currentFunction](...currentParams)
+        dataService.retrieve(...params)
           .then((result: any) => {
             setDataServiceList(result || [])
           })
@@ -258,18 +250,21 @@ export default function SelectInput({
             setLoading(false)
           })
       } else {
-        // 如果没有配置搜索服务，则使用本地过滤
-        const filteredList = handleSearch(keyword, initialData.length > 0 ? initialData : dropdownRender)
-        setDataServiceList(filteredList)
+        // 初始化模式：显示 dropdownRender 数据
+        setDataServiceList(dropdownRender)
         setLoading(false)
       }
     } else {
-      // 初始化场景：使用初始化相关的服务配置
+      // 原有逻辑保持不变
       if (dataService && dataServiceFunction) {
         const params = [...(dataServiceFunctionParams || [])]
 
+        const queryIndex = params.indexOf('$QUERY_STRING')
+        if (queryIndex !== -1) {
+          params[queryIndex] = keyword
+        }
+
         if (dataServiceRetrieve) {
-          // 如果是检索类的，每次都调用接口
           dataService[dataServiceFunction](...params)
             .then((result: any) => {
               setDataServiceList(result || [])
@@ -278,7 +273,6 @@ export default function SelectInput({
               setLoading(false)
             })
         } else {
-          // 如果不是检索类的，只在第一次调用接口
           if (!hasFetchedData) {
             dataService[dataServiceFunction](...params)
               .then((result: any) => {
@@ -290,18 +284,19 @@ export default function SelectInput({
                 setLoading(false)
               })
           } else {
-            // 使用缓存的初始数据
-            setDataServiceList(initialData)
+            const filteredList = handleSearch(keyword, initialData)
+            setDataServiceList(filteredList)
             setLoading(false)
           }
         }
       } else {
-        // 没有配置数据服务，使用 dropdownRender
-        setDataServiceList(dropdownRender)
+        const filteredList = handleSearch(keyword, dropdownRender)
+
+        setDataServiceList(filteredList)
         setLoading(false)
       }
     }
-  }, [keyword, isShow, dropdownRender, manualSearchTrigger])
+  }, [keyword, isShow, dropdownRender, manualSearchTrigger, enableDualMode])
 
   useEffect(() => {
     if (defaultValue) {
@@ -437,7 +432,7 @@ export default function SelectInput({
                 </div>
               )}
 
-              {loading && (dataService || searchDataService) ? (
+              {loading && dataService ? (
                 <div className="select-input__popup__list py-1 px-1">加载中...</div>
               ) : dropDownList.length !== 0 ? (
                 type === 'COMMON' ? (
