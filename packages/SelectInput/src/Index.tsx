@@ -73,8 +73,8 @@ export default function SelectInput({
   onBlured,
   size = "auto",
   zIndex = 1101,
-  isDisable = false,
   isHandleInput = false,
+  isDisable = false,
   isDisableBodyScroll = false,
   dataService,
   dataServiceFunction = "retrieveList", // 默认调用 retrieveList 函数
@@ -130,6 +130,14 @@ export default function SelectInput({
       } else {
         onChange(newValue);
       }
+    }
+
+    if (newValue) {
+      const title: any = document.getElementById(`${titleId}`);
+      title.classList.add("z-n1");
+    } else {
+      const title: any = document.getElementById(`${titleId}`);
+      title.classList.remove("z-n1");
     }
   };
 
@@ -318,25 +326,29 @@ export default function SelectInput({
               setKeyword(null);
             }
 
+            setIsShow(true);
+            const title: any = document.getElementById(`${titleId}`);
+            title.classList.add(
+              "text-secondary-emphasis",
+              "user-select-none",
+              "pe-none"
+            );
+
             // 外部聚焦方法
             if (onFoused) {
               onFoused();
             }
-
-            setIsShow(true);
-            const title: any = document.getElementById(`${titleId}`);
-            title.classList.add("text-secondary-emphasis", "z-n1");
           }}
           onBlur={() => {
             const title: any = document.getElementById(`${titleId}`);
             const input: any = document.getElementById(`${inputId}`);
-            title.classList.remove("text-secondary-emphasis", "z-n1");
+            title.classList.remove(
+              "text-secondary-emphasis",
+              "user-select-none",
+              "pe-none",
+              "z-n1"
+            );
             input.value = "";
-
-            // 外部失焦方法
-            if (onBlured) {
-              onBlured();
-            }
 
             setTimeout(() => {
               if (isDisableBodyScroll) {
@@ -350,6 +362,11 @@ export default function SelectInput({
 
               setFocusedOption(null);
             }, 100);
+
+            // 外部失焦方法
+            if (onBlured) {
+              onBlured();
+            }
           }}
           onKeyDown={handleKeyDown}
           autoComplete="off"
