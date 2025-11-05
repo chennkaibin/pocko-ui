@@ -3,7 +3,10 @@
   margin: 0 24px 0 0;
   padding: 0;
   color: #000000d9;
-  position: absolute;
+  position: fixed;
+  top: 20px;
+  right: 20px;
+
   z-index: 1020;
   width: 400px;
   max-width: calc(100vw - 400px);

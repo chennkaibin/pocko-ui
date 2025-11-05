@@ -6,25 +6,28 @@ import React, {
 } from "react";
 import { createPortal } from "react-dom";
 
-import { clsWrite, clsCombine } from "../../../utils/cls";
+import { clsWrite } from "../../../utils/cls";
 
 import "./Index.scss";
 
-interface Notice {
+/** 单条通知对象 */
+export interface Notice {
   message: string;
   description?: string;
   duration?: number;
 }
 
-interface NotificationProps {
-  wrapperContentClassName?: string; // 内部样式名
-  wrapperContentMessageClassName?: string;
-  wrapperContentDescriptionClassName?: string;
-  closeIcon?: React.ReactNode;
-  onOpen?: Function | any; // 打开时触发函数
-  onClose?: Function | any; // 关闭时触发函数
+/** Notification 组件 Props */
+export interface NotificationProps {
+  wrapperContentClassName?: string; // 容器额外样式
+  wrapperContentMessageClassName?: string; // 消息文本样式
+  wrapperContentDescriptionClassName?: string; // 描述文本样式
+  closeIcon?: React.ReactNode; // 自定义关闭按钮
+  onOpen?: () => void; // 打开时回调
+  onClose?: () => void; // 关闭时回调
 }
 
+/** Notification 组件 ref 暴露方法 */
 export interface NotificationRef {
   open: (notice: Notice) => void;
   close: () => void;
@@ -47,41 +50,34 @@ const Notification = forwardRef<NotificationRef, NotificationProps>(
       description: "",
       duration: 3,
     });
-    const [container] = useState(() => document.createElement("div"));
+    const [container, setContainer] = useState<HTMLDivElement | null>(null);
 
-    // 初始化挂载容器
+    // 延迟初始化容器，避免 SSR 报错
     useEffect(() => {
-      container.className = "noticefication-content";
-      document.body.appendChild(container);
+      const div = document.createElement("div");
+      div.className = "noticefication-content";
+      document.body.appendChild(div);
+      setContainer(div);
 
-      const handleScroll = () => {
-        const scrollTop = window.scrollY || document.documentElement.scrollTop;
-        container.style.top = `${20 + scrollTop}px`;
-        container.style.right = "20px";
-      };
-
-      handleScroll();
-      window.addEventListener("scroll", handleScroll);
       return () => {
-        document.body.removeChild(container);
-        window.removeEventListener("scroll", handleScroll);
+        document.body.removeChild(div);
       };
-    }, [container]);
+    }, []);
 
     // 暴露给 ref 调用的方法
     useImperativeHandle(ref, () => ({
-      open: (n: Notice) => showNotice(n),
+      open: (notice: Notice) => showNotice(notice),
       close: () => handleClose(),
     }));
 
     // 打开通知
-    const showNotice = (n: Notice) => {
-      setCurrentNotice(n);
+    const showNotice = (notice: Notice) => {
+      setCurrentNotice(notice);
       setVisible(true);
       onOpen?.();
 
-      if (n.duration && n.duration > 0) {
-        setTimeout(() => handleClose(), n.duration * 1000);
+      if (notice.duration && notice.duration > 0) {
+        setTimeout(() => handleClose(), notice.duration * 1000);
       }
     };
 
@@ -91,13 +87,14 @@ const Notification = forwardRef<NotificationRef, NotificationProps>(
       onClose?.();
     };
 
-    if (!visible) return null;
+    // SSR 阶段或未初始化容器，直接返回 null
+    if (!container || !visible) return null;
 
     const noticeContent = (
       <div
         className={clsWrite(
           wrapperContentClassName,
-          "bg-white shadow-lg border p-4 animate-slide-in position-relative"
+          "bg-white shadow-lg border p-4 animate-slide-in relative"
         )}
       >
         <div
@@ -121,10 +118,10 @@ const Notification = forwardRef<NotificationRef, NotificationProps>(
         )}
 
         <div
-          className="noticefication-content_close"
-          onClick={() => setVisible(false)}
+          className="noticefication-content_close cursor-pointer absolute top-2 right-2"
+          onClick={handleClose}
         >
-          {closeIcon || "X"}
+          {closeIcon || "×"}
         </div>
       </div>
     );
