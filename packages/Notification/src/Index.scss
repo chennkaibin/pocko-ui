@@ -1,0 +1,42 @@
+.noticefication-content {
+  box-sizing: border-box;
+  margin: 0 24px 0 0;
+  padding: 0;
+  color: #000000d9;
+  position: absolute;
+  z-index: 1020;
+  width: 400px;
+  max-width: calc(100vw - 400px);
+
+  .noticefication-content_message {
+    margin-bottom: 8px;
+    font-size: 16px;
+    line-height: 24px;
+  }
+
+  .noticefication-content_description {
+    font-size: 14px;
+  }
+
+  .noticefication-content_close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+  }
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease forwards;
+}
