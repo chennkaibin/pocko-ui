@@ -22,75 +22,81 @@ export interface NotificationProps {
   wrapperContentClassName?: string; // 容器额外样式
   wrapperContentMessageClassName?: string; // 消息文本样式
   wrapperContentDescriptionClassName?: string; // 描述文本样式
+  wrapperContentCloseInconClassName?: string; // 关闭按钮样式
   closeIcon?: React.ReactNode; // 自定义关闭按钮
   onOpen?: () => void; // 打开时回调
   onClose?: () => void; // 关闭时回调
+
+  width?: number | string; // 通知宽度
+  top?: number; // 通知距离顶部
+  zIndex?: number;
 }
 
 /** Notification 组件 ref 暴露方法 */
-export interface NotificationRef {
+export interface NoticeRef {
   open: (notice: Notice) => void;
   close: () => void;
 }
 
-const Notification = forwardRef<NotificationRef, NotificationProps>(
-  (props, ref) => {
-    const {
-      wrapperContentClassName,
-      wrapperContentMessageClassName,
-      wrapperContentDescriptionClassName,
-      closeIcon,
-      onOpen,
-      onClose,
-    } = props;
+const Notification = forwardRef<NoticeRef, NotificationProps>((props, ref) => {
+  const {
+    wrapperContentClassName,
+    wrapperContentMessageClassName,
+    wrapperContentDescriptionClassName,
+    wrapperContentCloseInconClassName,
+    closeIcon,
+    onOpen,
+    onClose,
+    width = 400,
+    top = 20,
+    zIndex = 1020,
+  } = props;
 
-    const [visible, setVisible] = useState(false);
-    const [currentNotice, setCurrentNotice] = useState<Notice>({
-      message: "",
-      description: "",
-      duration: 3,
-    });
-    const [container, setContainer] = useState<HTMLDivElement | null>(null);
+  const [visible, setVisible] = useState(false);
+  const [currentNotice, setCurrentNotice] = useState<Notice>({
+    message: "",
+    description: "",
+    duration: 3,
+  });
 
-    // 延迟初始化容器，避免 SSR 报错
-    useEffect(() => {
-      const div = document.createElement("div");
-      div.className = "noticefication-content";
-      document.body.appendChild(div);
-      setContainer(div);
+  // 暴露给 ref 调用的方法
+  useImperativeHandle(ref, () => ({
+    open: (notice: Notice) => showNotice(notice),
+    close: () => handleClose(),
+  }));
 
-      return () => {
-        document.body.removeChild(div);
-      };
-    }, []);
+  // 打开通知
+  const showNotice = (notice: Notice) => {
+    setCurrentNotice(notice);
+    setVisible(true);
+    onOpen?.();
 
-    // 暴露给 ref 调用的方法
-    useImperativeHandle(ref, () => ({
-      open: (notice: Notice) => showNotice(notice),
-      close: () => handleClose(),
-    }));
+    if (notice.duration && notice.duration > 0) {
+      setTimeout(() => handleClose(), notice.duration * 1000);
+    }
+  };
 
-    // 打开通知
-    const showNotice = (notice: Notice) => {
-      setCurrentNotice(notice);
-      setVisible(true);
-      onOpen?.();
+  // 关闭通知
+  const handleClose = () => {
+    setVisible(false);
+    onClose?.();
+  };
 
-      if (notice.duration && notice.duration > 0) {
-        setTimeout(() => handleClose(), notice.duration * 1000);
-      }
-    };
+  if (!visible) return null;
 
-    // 关闭通知
-    const handleClose = () => {
-      setVisible(false);
-      onClose?.();
-    };
+  let widthValue = typeof width === "number" ? `${width}px` : width;
 
-    // SSR 阶段或未初始化容器，直接返回 null
-    if (!container || !visible) return null;
-
-    const noticeContent = (
+  const noticeContent = (
+    <div
+      className="noticefication-content"
+      style={{
+        width: widthValue,
+        maxWidth:
+          typeof width === "number" ? `calc(100vw - ${width}px)` : "100vw",
+        top,
+        zIndex: zIndex,
+      }}
+    >
       <div
         className={clsWrite(
           wrapperContentClassName,
@@ -100,7 +106,7 @@ const Notification = forwardRef<NotificationRef, NotificationProps>(
         <div
           className={clsWrite(
             wrapperContentMessageClassName,
-            "noticefication-content_message font-medium text-gray-900"
+            "noticefication-content_message"
           )}
         >
           {currentNotice.message}
@@ -110,7 +116,7 @@ const Notification = forwardRef<NotificationRef, NotificationProps>(
           <div
             className={clsWrite(
               wrapperContentDescriptionClassName,
-              "noticefication-content_description text-gray-600 text-sm mt-1"
+              "noticefication-content_description mt-1"
             )}
           >
             {currentNotice.description}
@@ -118,16 +124,19 @@ const Notification = forwardRef<NotificationRef, NotificationProps>(
         )}
 
         <div
-          className="noticefication-content_close cursor-pointer absolute top-2 right-2"
+          className={clsWrite(
+            wrapperContentCloseInconClassName,
+            "noticefication-content_close"
+          )}
           onClick={handleClose}
         >
           {closeIcon || "×"}
         </div>
       </div>
-    );
+    </div>
+  );
 
-    return createPortal(noticeContent, container);
-  }
-);
+  return createPortal(noticeContent, document.body);
+});
 
 export default Notification;
