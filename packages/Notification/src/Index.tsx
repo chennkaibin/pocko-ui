@@ -7,6 +7,7 @@ import React, {
 import { createPortal } from "react-dom";
 
 import { clsWrite } from "../../../utils/cls";
+import useDraggable from "../../../utils/hooks/useDraggable";
 
 import "./Index.scss";
 
@@ -30,6 +31,8 @@ export interface NotificationProps {
   width?: number | string; // 通知宽度
   top?: number; // 通知距离顶部
   zIndex?: number;
+
+  isDraggable?: boolean;
 }
 
 /** Notification 组件 ref 暴露方法 */
@@ -50,6 +53,7 @@ const Notification = forwardRef<NoticeRef, NotificationProps>((props, ref) => {
     width = 400,
     top = 20,
     zIndex = 1020,
+    isDraggable = false,
   } = props;
 
   const [visible, setVisible] = useState(false);
@@ -79,8 +83,20 @@ const Notification = forwardRef<NoticeRef, NotificationProps>((props, ref) => {
   // 关闭通知
   const handleClose = () => {
     setVisible(false);
+    resetPosition();
+
     onClose?.();
   };
+
+  //
+  // Draggable functionality
+  const { dragContentHandle, dragHandle, resetPosition }: any = useDraggable({
+    enabled: isDraggable, // if `false`, drag and drop is disabled
+    preventOutsideScreen: {
+      xAxis: false,
+      yAxis: false,
+    },
+  });
 
   if (!visible) return null;
 
@@ -88,6 +104,7 @@ const Notification = forwardRef<NoticeRef, NotificationProps>((props, ref) => {
 
   const noticeContent = (
     <div
+      ref={dragContentHandle}
       className="noticefication-content"
       style={{
         width: widthValue,
@@ -98,10 +115,11 @@ const Notification = forwardRef<NoticeRef, NotificationProps>((props, ref) => {
       }}
     >
       <div
-        className={clsWrite(
+        ref={dragHandle}
+        className={`${clsWrite(
           wrapperContentClassName,
-          "bg-white shadow-lg border p-4 animate-slide-in relative"
-        )}
+          "bg-white shadow-lg border p-4 relative"
+        )} animate-slide-in `}
       >
         <div
           className={clsWrite(
