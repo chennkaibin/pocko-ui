@@ -31,8 +31,7 @@ interface Props {
   kbcode?: string | any;
   dropdownRender: any[];
   dropdownPosition?: "top" | "bottom" | "auto";
-  inputId: string | any;
-  titleId: string | any;
+  onDropdownHide?: () => void;
   defaultValue?: string | any;
   index?: string | number | any;
   onChange: Function;
@@ -63,8 +62,7 @@ export default function SelectInput({
   kbcode = "kb_code",
   dropdownRender,
   dropdownPosition,
-  inputId,
-  titleId,
+  onDropdownHide,
   defaultValue,
   index,
   onChange,
@@ -84,6 +82,9 @@ export default function SelectInput({
   cleanTrigger,
   manualSearchTrigger = false,
 }: Props) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const titleRef = useRef<HTMLDivElement>(null);
+
   const [keyword, setKeyword] = useState<any>(null);
   const [value, setValue] = useState<any>("");
   const [isShow, setIsShow] = useState<boolean>(false);
@@ -100,7 +101,8 @@ export default function SelectInput({
     setIsShow,
     dataServiceList,
     loading,
-    dropdownPosition
+    dropdownPosition,
+    onDropdownHide,
   );
 
   // 键盘逻辑
@@ -113,7 +115,7 @@ export default function SelectInput({
   } = useKeyboardNavigation(
     dataServiceList.length,
     (index) => chooseOption(dataServiceList[index]),
-    onKeyDown
+    onKeyDown,
   );
 
   const dropDownList = useMemo(() => dataServiceList, [dataServiceList]);
@@ -133,11 +135,9 @@ export default function SelectInput({
     }
 
     if (newValue) {
-      const title: any = document.getElementById(`${titleId}`);
-      title.classList.add("z-n1");
+      titleRef.current?.classList.add("z-n1");
     } else {
-      const title: any = document.getElementById(`${titleId}`);
-      title.classList.remove("z-n1");
+      titleRef.current?.classList.remove("z-n1");
     }
   };
 
@@ -157,8 +157,7 @@ export default function SelectInput({
 
     // 失去焦点
     setTimeout(() => {
-      const input: any = document.getElementById(`${inputId}`);
-      input.blur();
+      inputRef.current?.blur();
     }, 0);
   }
 
@@ -212,8 +211,7 @@ export default function SelectInput({
 
     // 失去焦点
     setTimeout(() => {
-      const input: any = document.getElementById(`${inputId}`);
-      input.blur();
+      inputRef.current?.blur();
     }, 0);
   }
 
@@ -271,6 +269,7 @@ export default function SelectInput({
       }
     } else {
       const filteredList = handleSearch(keyword, dropdownRender);
+
       setDataServiceList(filteredList);
       setLoading(false);
     }
@@ -285,7 +284,7 @@ export default function SelectInput({
 
       // 根据 defaultValue 找到对应的选项索引，并设置 focusedOption
       const defaultOptionIndex = renderList.findIndex(
-        (item) => item[name] === defaultValue
+        (item) => item[name] === defaultValue,
       );
 
       if (defaultOptionIndex !== -1) {
@@ -311,12 +310,12 @@ export default function SelectInput({
         ref={dropdown}
       >
         <input
+          ref={inputRef}
           type="text"
           onChange={handleInputChange}
-          id={inputId}
           className={clsCombine(
             clsWrite(wrapperContentInputClassName, "form-control"),
-            "select-input__content__input"
+            "select-input__content__input",
           )}
           onFocus={() => {
             if (isDisableBodyScroll) {
@@ -329,11 +328,10 @@ export default function SelectInput({
             }
 
             setIsShow(true);
-            const title: any = document.getElementById(`${titleId}`);
-            title.classList.add(
+            titleRef.current?.classList.add(
               "text-secondary-emphasis",
               "user-select-none",
-              "pe-none"
+              "pe-none",
             );
 
             // 外部聚焦方法
@@ -342,15 +340,14 @@ export default function SelectInput({
             }
           }}
           onBlur={() => {
-            const title: any = document.getElementById(`${titleId}`);
-            const input: any = document.getElementById(`${inputId}`);
-            title.classList.remove(
+            titleRef.current?.classList.remove(
               "text-secondary-emphasis",
               "user-select-none",
               "pe-none",
-              "z-n1"
+              "z-n1",
             );
-            input.value = "";
+
+            inputRef.current!.value = "";
 
             setTimeout(() => {
               if (isDisableBodyScroll) {
@@ -380,8 +377,7 @@ export default function SelectInput({
             isShow ? "select-input__content__arrow--reverse" : ""
           }`}
           onClick={() => {
-            const input: any = document.getElementById(`${inputId}`);
-            input.focus();
+            inputRef.current?.focus();
           }}
         >
           <svg width="10px" height="10px" viewBox="0 -4.5 20 20">
@@ -414,7 +410,7 @@ export default function SelectInput({
               {/* 删除按钮项 */}
               {cleanTrigger?.valid && (
                 <div
-                  className="select-input__popup__list py-1 px-1 border-bottom bg-light"
+                  className="select-input__popup__list py-1 px-1 border-bottom bg-light sticky-top"
                   onMouseDown={(e) => {
                     e.stopPropagation();
                     clearSelection(); // 清空选项
@@ -499,11 +495,11 @@ export default function SelectInput({
                 </div>
               )}
             </div>,
-            document.body
+            document.body,
           )}
 
         <div
-          id={`${titleId}`}
+          ref={titleRef}
           className="position-absolute ms-2 select-input__content__word__container"
           style={{
             transform: "translateY(-50%)",
@@ -513,8 +509,7 @@ export default function SelectInput({
           onMouseDown={(e: any) => {
             e.preventDefault();
 
-            const input: any = document.getElementById(`${inputId}`);
-            input.focus();
+            inputRef.current?.focus();
           }}
           title={
             Array.isArray(value) && value.length > 0

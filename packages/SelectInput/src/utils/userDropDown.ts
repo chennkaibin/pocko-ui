@@ -5,10 +5,19 @@ export const useDropdown = (
   setIsShow: React.Dispatch<React.SetStateAction<boolean>>,
   dropDownList: any[], // 添加下拉框内容作为参数
   loading: boolean,
-  dropdownPosition: "top" | "bottom" | "auto" = "auto" // 新增参数，默认自动计算
+  dropdownPosition: "top" | "bottom" | "auto" = "auto", // 新增参数，默认自动计算
+  onHide?: () => void,
 ) => {
   const dropdown = useRef<HTMLDivElement | any>(null);
   const dropdownContent = useRef<HTMLDivElement | any>(null);
+  const prevIsShowRef = useRef(false);
+
+  useEffect(() => {
+    if (prevIsShowRef.current && !isShow) {
+      onHide?.();
+    }
+    prevIsShowRef.current = isShow;
+  }, [isShow, onHide]);
 
   const adjustDropdownPosition = () => {
     if (dropdownContent.current && dropdown.current) {
@@ -25,37 +34,21 @@ export const useDropdown = (
       let positionTop;
       if (dropdownPosition == "top") {
         // 始终显示在上方
-        positionTop = `${
-          dropdownRect.top + scrollY - dropdownContent.current.offsetHeight
-        }px`;
-        dropdownContent.current.style.maxHeight = `${Math.min(
-          200,
-          spaceAbove - 10
-        )}px`;
+        positionTop = `${dropdownRect.top + scrollY - dropdownContent.current.offsetHeight}px`;
+        dropdownContent.current.style.maxHeight = `${Math.min(200, spaceAbove - 10)}px`;
       } else if (dropdownPosition == "bottom") {
         // 始终显示在下方
         positionTop = `${dropdownRect.bottom + scrollY}px`;
-        dropdownContent.current.style.maxHeight = `${Math.min(
-          200,
-          spaceBelow - 10
-        )}px`;
+        dropdownContent.current.style.maxHeight = `${Math.min(200, spaceBelow - 10)}px`;
       } else {
         if (spaceBelow < 100 && spaceAbove > spaceBelow) {
           // 显示在上方
-          positionTop = `${
-            dropdownRect.top + scrollY - dropdownContent.current.offsetHeight
-          }px`;
-          dropdownContent.current.style.maxHeight = `${Math.min(
-            200,
-            spaceAbove - 10
-          )}px`; // 留出10px间距
+          positionTop = `${dropdownRect.top + scrollY - dropdownContent.current.offsetHeight}px`;
+          dropdownContent.current.style.maxHeight = `${Math.min(200, spaceAbove - 10)}px`; // 留出10px间距
         } else {
           // 显示在下方
           positionTop = `${dropdownRect.bottom + scrollY}px`;
-          dropdownContent.current.style.maxHeight = `${Math.min(
-            200,
-            spaceBelow - 10
-          )}px`;
+          dropdownContent.current.style.maxHeight = `${Math.min(200, spaceBelow - 10)}px`;
         }
       }
 
@@ -69,7 +62,7 @@ export const useDropdown = (
       if (spaceRight < dropdownWidth) {
         positionLeft = Math.max(
           10,
-          dropdownRect.right + scrollX - dropdownWidth
+          dropdownRect.right + scrollX - dropdownWidth,
         ); // 最小间距为10px
       }
 
