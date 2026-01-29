@@ -122,7 +122,7 @@ export default function SelectInput({
 
   // input框输入
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = event.target.value.toLowerCase();
+    const newValue = event.target.value;
     setKeyword(newValue);
 
     // 当允许手动输入时，触发 onChange 事件，将输入值传递给父组件

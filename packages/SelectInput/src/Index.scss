@@ -34,7 +34,8 @@
 
 .select-input__popup__menu {
   max-height: 0;
-  overflow-x: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
 
   .select-input__popup__list {
     background-color: #fff;
@@ -47,7 +48,7 @@
   }
 
   &::-webkit-scrollbar {
-    width: 5px;
+    width: 10px;
     height: 10px;
     background-color: #e6e6e6;
   }
