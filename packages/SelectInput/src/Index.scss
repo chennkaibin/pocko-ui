@@ -34,8 +34,7 @@
 
 .select-input__popup__menu {
   max-height: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: auto;
 
   .select-input__popup__list {
     background-color: #fff;

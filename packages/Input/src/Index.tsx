@@ -14,8 +14,8 @@ import "./Index.scss";
 import { clsWrite, clsCombine } from "../../../utils/cls";
 
 interface InputProps {
-  id?: string | number | any; // input框的 id
-  name?: string | any; // input框的 name
+  id?: string; // input框的 id
+  name?: string; // input框的 name
   inputRef?: any; // input绑定的ref
 
   size?: string | number; // 宽度
@@ -28,7 +28,7 @@ interface InputProps {
   iconRight?: React.ReactNode | string; // input-group 右侧
   controlClassName?: string; // input 样式名字
 
-  type?: string; // 输入类型 (如 'text', 'password', 'email')
+  type?: React.HTMLInputTypeAttribute; // 输入类型 (如 'text', 'password', 'email')
   disabled?: any; // 是否禁用
   readonly?: any; // 是否只读
   required?: any; // 是否必填
@@ -36,10 +36,10 @@ interface InputProps {
   defaultValue?: string | any; // 初始值
   placeholder?: string; // 占位符
   autoComplete?: "on" | "off"; // 是否自动填充，默认是 on(自动填充)
-  // type == number的时候
-  min?: number; // 最小值
-  max?: number; // 最大值
-  step?: number; // 步长
+
+  min?: number | string; // 最小值
+  max?: number | string; // 最大值
+  step?: number | string; // 步长
 
   onChange?: (value: string) => void; // 改变时回调
   onBlur?: () => void; // 失焦回调
@@ -149,7 +149,7 @@ const Input = forwardRef((props: InputProps, externalRef: any) => {
         <div
           className={clsCombine(
             "position-relative",
-            clsWrite(controlGroupWrapperClassName, "input-group")
+            clsWrite(controlGroupWrapperClassName, "input-group"),
           )}
           style={{ width: `${size}px` }}
         >
@@ -157,7 +157,7 @@ const Input = forwardRef((props: InputProps, externalRef: any) => {
             <span
               className={clsWrite(
                 controlGroupTextClassName,
-                "input-group-text"
+                "input-group-text",
               )}
             >
               {iconLeft}
@@ -179,16 +179,16 @@ const Input = forwardRef((props: InputProps, externalRef: any) => {
             readOnly={readonly || null}
             className={clsWrite(controlClassName, "form-control")}
             autoComplete={autoComplete}
-            min={typeRes === "number" ? min : undefined} // 仅当类型是 number 时传递 min
-            max={typeRes === "number" ? max : undefined} // 仅当类型是 number 时传递 max
-            step={typeRes === "number" ? step : undefined} // 仅当类型是 number 时传递 step
+            min={min}
+            max={max}
+            step={step}
           />
 
           {iconRight ? (
             <span
               className={clsWrite(
                 controlGroupTextClassName,
-                "input-group-text"
+                "input-group-text",
               )}
             >
               {iconRight}
