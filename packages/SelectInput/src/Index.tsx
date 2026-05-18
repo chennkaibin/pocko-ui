@@ -51,6 +51,7 @@ interface Props {
   manualSearchTrigger?: boolean; // 是否默认聚焦就检索
   //
   showTagRemove?: boolean; // 多选是否快捷删除
+  onTagRemove?: (removedItem: any, newValue: any[], index?: any) => void;
 }
 
 export default function SelectInput({
@@ -85,6 +86,7 @@ export default function SelectInput({
   manualSearchTrigger = false,
   //
   showTagRemove = false,
+  onTagRemove,
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const titleRef = useRef<HTMLDivElement>(null);
@@ -572,6 +574,11 @@ export default function SelectInput({
                             );
 
                             setValue(newValue);
+
+                            // tag 删除事件
+                            if (onTagRemove) {
+                              onTagRemove(item, newValue, index);
+                            }
 
                             if (index) {
                               onChange(newValue, index);
