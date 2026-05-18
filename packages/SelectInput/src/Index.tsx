@@ -49,6 +49,8 @@ interface Props {
   dataServiceFunctionParams?: any[]; // 指定要调用的函数的传参
   dataServiceRetrieve?: boolean; // 该服务类函数是否是检索类的
   manualSearchTrigger?: boolean; // 是否默认聚焦就检索
+  //
+  showTagRemove?: boolean; // 多选是否快捷删除
 }
 
 export default function SelectInput({
@@ -81,6 +83,8 @@ export default function SelectInput({
   renderOption,
   cleanTrigger,
   manualSearchTrigger = false,
+  //
+  showTagRemove = false,
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const titleRef = useRef<HTMLDivElement>(null);
@@ -520,11 +524,72 @@ export default function SelectInput({
           {type === "COMMON" ? (
             <span>{value}</span>
           ) : (
-            <span>
-              {Array.isArray(value) && value.length > 0
-                ? value.map((item: any) => item[name]).join(", ")
-                : value}
-            </span>
+            <div
+              className="d-flex align-items-center"
+              style={{
+                maxWidth: "100%",
+                overflow: "hidden",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {Array.isArray(value) &&
+                value.map((item: any, idx: number) => (
+                  <React.Fragment key={item[id]}>
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                      }}
+                    >
+                      {/* 名字 */}
+                      <span
+                        style={{
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: 80,
+                        }}
+                      >
+                        {item[name]}
+                      </span>
+
+                      {/* 删除 */}
+                      {showTagRemove && (
+                        <span
+                          className="text-danger ms-1"
+                          style={{
+                            cursor: "pointer",
+                            fontSize: 12,
+                            userSelect: "none",
+                            lineHeight: 1,
+                          }}
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+
+                            const newValue = value.filter(
+                              (v: any) => v[id] !== item[id],
+                            );
+
+                            setValue(newValue);
+
+                            if (index) {
+                              onChange(newValue, index);
+                            } else {
+                              onChange(newValue);
+                            }
+                          }}
+                        >
+                          ✕
+                        </span>
+                      )}
+                    </span>
+
+                    {/* 逗号 */}
+                    {idx !== value.length - 1 && <span>，</span>}
+                  </React.Fragment>
+                ))}
+            </div>
           )}
         </div>
       </div>
