@@ -560,14 +560,19 @@ export default function SelectInput({
                         <span
                           className="text-danger ms-1"
                           style={{
-                            cursor: "pointer",
+                            cursor: isDisable ? "not-allowed" : "pointer",
                             fontSize: 12,
+                            opacity: isDisable ? 0.45 : 1,
                             userSelect: "none",
                             lineHeight: 1,
                           }}
                           onMouseDown={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
+
+                            if (isDisable) {
+                              return;
+                            }
 
                             const newValue = value.filter(
                               (v: any) => v[id] !== item[id],
