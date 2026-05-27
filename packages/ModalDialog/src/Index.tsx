@@ -15,6 +15,7 @@ interface Props {
   zIndex?: number;
   heading?: string;
   modalSize?: "full" | "xl" | "lg" | "common";
+  maxWidth?: string;
   modalContentClassName?: string;
   modalHeaderClassName?: string;
   modalBodyClassName?: string;
@@ -41,6 +42,7 @@ const Mask = forwardRef(
       children,
       operationName = "确认",
       modalBodyHeight,
+      maxWidth,
       onOpen,
       onClose,
       zIndex,
@@ -59,6 +61,12 @@ const Mask = forwardRef(
     const [isMounted, setIsMounted] = useState(false);
     const containerRef = useRef<HTMLElement | null>(null);
     const modalRef = useRef<any>(null);
+    const normalizedModalBodyHeight = modalBodyHeight?.trim();
+    const modalBodyStyleHeight = normalizedModalBodyHeight
+      ? /^\d+(\.\d+)?$/.test(normalizedModalBodyHeight)
+        ? `${normalizedModalBodyHeight}vh`
+        : normalizedModalBodyHeight
+      : "auto";
 
     useEffect(() => {
       containerRef.current = document.createElement("div");
@@ -140,6 +148,7 @@ const Mask = forwardRef(
               "modal-lg": modalSize === "lg",
             }
           )}
+          style={{ maxWidth }}
         >
           <div
             ref={dragContentHandle}
@@ -179,7 +188,7 @@ const Mask = forwardRef(
             <div
               className={clsWrite(modalBodyClassName, "modal-body")}
               style={{
-                height: modalBodyHeight ? `${modalBodyHeight}vh` : "auto",
+                height: modalBodyStyleHeight,
               }}
             >
               {children}
