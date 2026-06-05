@@ -38,7 +38,7 @@ interface Props {
   onKeyDown?: Function | any;
   onFoused?: Function | any;
   onBlured?: Function | any;
-  size?: string | any;
+  inputWidth?: string;
   zIndex?: string | any;
   isDisable?: boolean;
   isHandleInput?: boolean;
@@ -72,7 +72,7 @@ export default function SelectInput({
   onKeyDown,
   onFoused,
   onBlured,
-  size = "auto",
+  inputWidth,
   zIndex = 1101,
   isHandleInput = false,
   isDisable = false,
@@ -88,6 +88,13 @@ export default function SelectInput({
   showTagRemove = false,
   onTagRemove,
 }: Props) {
+  const normalizedInputWidth = inputWidth?.trim();
+  const selectInputContentInputWidth = normalizedInputWidth
+    ? /^\d+(\.\d+)?$/.test(normalizedInputWidth)
+      ? `${normalizedInputWidth}px`
+      : normalizedInputWidth
+    : "auto";
+
   const inputRef = useRef<HTMLInputElement>(null);
   const titleRef = useRef<HTMLDivElement>(null);
 
@@ -312,7 +319,7 @@ export default function SelectInput({
 
       <div
         className="select-input__content"
-        style={{ width: typeof size === "number" ? `${size}px` : "auto" }}
+        style={{ width: selectInputContentInputWidth }}
         ref={dropdown}
       >
         <input
