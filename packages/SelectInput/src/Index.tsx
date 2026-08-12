@@ -52,6 +52,11 @@ interface Props {
   //
   showTagRemove?: boolean; // 多选是否快捷删除
   onTagRemove?: (removedItem: any, newValue: any[], index?: any) => void;
+  onTagClick?: (
+    item: any,
+    event: React.MouseEvent<HTMLSpanElement>,
+    index?: any,
+  ) => void;
 }
 
 export default function SelectInput({
@@ -87,6 +92,7 @@ export default function SelectInput({
   //
   showTagRemove = false,
   onTagRemove,
+  onTagClick,
 }: Props) {
   const normalizedInputWidth = inputWidth?.trim();
   const selectInputContentInputWidth = normalizedInputWidth
@@ -520,6 +526,10 @@ export default function SelectInput({
             width: `${dropdown.current?.getBoundingClientRect().width}px`,
           }}
           onMouseDown={(e: any) => {
+            if (e.defaultPrevented) {
+              return;
+            }
+
             e.preventDefault();
 
             inputRef.current?.focus();
@@ -557,6 +567,10 @@ export default function SelectInput({
                           textOverflow: "ellipsis",
                           whiteSpace: "nowrap",
                           maxWidth: 80,
+                          cursor: onTagClick ? "pointer" : undefined,
+                        }}
+                        onMouseDown={(event) => {
+                          onTagClick?.(item, event, index);
                         }}
                       >
                         {item[name]}
